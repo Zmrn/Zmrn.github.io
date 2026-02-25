@@ -98,7 +98,7 @@ Spine动画通常至少包含六个文件，这种情况下，比较合理的打
 ## 反向引用计数法
 我们将一个资源**被哪些资源引用**的列表称之为这个资源的反向引用列表。
 
-![whiteboard_exported_image](https://img2024.cnblogs.com/blog/3767518/202602/3767518-20260211175458108-1801433657.png)
+![whiteboard_exported_image](/assets/whiteboard_exported_image.png)
 
 如上图，role.png的反向引用为
 
@@ -252,7 +252,7 @@ public static string GetAssetBundleName(CompactFileBundleInfo asset, Dictionary<
 
 刚才提到的理想情况下的反向引用是这样的：
 
-![whiteboard_exported_image (12)](https://img2024.cnblogs.com/blog/3767518/202602/3767518-20260211181151006-773708913.png)
+![whiteboard_exported_image (12)](/assets/whiteboard_exported_image_12.png)
 
 但实际情况是这样的：
 
@@ -262,7 +262,7 @@ public static string GetAssetBundleName(CompactFileBundleInfo asset, Dictionary<
 
 ### 还有一种情况
 
-![whiteboard_exported_image (11)](https://img2024.cnblogs.com/blog/3767518/202602/3767518-20260211180909010-1890628759.png)
+![whiteboard_exported_image (11)](/assets/whiteboard_exported_image_11.png)
 对于传统的反向查找法，面对刚才提到过的这种情况，三张贴图也会被分别打进3个Bundle里。
 
 ## 反向查找法的增强
@@ -413,7 +413,7 @@ foreach (var asset in allAssetsDict.Values)
 
 接下来介绍引用交集法。依旧以该分包图为例：
 
-![whiteboard_exported_image (8)](https://img2024.cnblogs.com/blog/3767518/202602/3767518-20260211180241147-973704224.png)
+![whiteboard_exported_image (8)](/assets/whiteboard_exported_image_8.png)
 
 ```Plain
 [MenuItem("Tools/BuildBundleCompact")] 

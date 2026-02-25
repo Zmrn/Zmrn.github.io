@@ -4,6 +4,7 @@ title: "如何构建零冗余又内存友好的资源打包方案？"
 categories: unity
 ---
 
+{: .note}
 > 本文会简单介绍下使用Unity的AssetBundle进行打包时可能遇到的一些问题，之后列出几个常见的分包算法并分析其利弊，最后给出一个可以解决前述算法中提到的问题的分包算法。
 > 只是一些笔者处理资源打包相关问题时的研究结果，用于优化资源的打包方案。自认为可以用于大多数的情况，但未必适用于所有情况。有疑问或更好的解决方案的话欢迎讨论交流。
 
@@ -15,9 +16,6 @@ categories: unity
 图中蓝色块代表预制件（或其他会被直接加载的资源），白色块代表被预制件引用的资源。
 
 这种情况，两个资源同时引用另一个资源，有哪些打Bundle的方案呢？我们使用绿色的块将同一个bundle中的文件包裹起来，以展示几种不同的分包方案：
-
-打进同一个bundle
-
 
 <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;">
     <div style="text-align: center;">
@@ -33,6 +31,7 @@ categories: unity
         <div style="margin-top: 8px; font-size: 1em; height: 28px; display: flex; align-items: center; justify-content: center;">打进三个不同bundle</div>
     </div>
 </div>
+
 当然还有更多不太可取的打包方案，这里不再枚举。
 
 在不同场景下，不同的打包方案可能各有优劣。
@@ -72,27 +71,18 @@ Spine动画通常至少包含六个文件，这种情况下，比较合理的打
 
 由于role2只被C.prefab引用，它应该和C.prefab打入同一个Bundle。
 
-一个优秀的打包方案应该满足以下条件：
-
--   零冗余，对硬盘友好
-    
-    -   不要同一个资源复制几份。
-        
-    -   Unity内置资源需要单独处理。
-        
-    -   使用SBP。Built-in Pipeline有Bug，打包对Texture2D的引用时必然出现冗余。
-        
--   低耦合，对内存友好
-    
-    -   加载A的时候，不要把不需要的B相关信息也加载进来。
-        
-    -   释放Bundle的时候资源不会相互掣肘。
-        
--   Bundle数量要少，对IO性能友好
-    
-    -   加载一个需要的资源时，能尽量少地加载新的Bundle。
-        
-    -   Bundle数量越多，内存占用越高，也更容易导致加载一个资源需要一口气加载一大堆Bundle的情况。
+{: .note}
+> 一个优秀的打包方案应该满足以下条件：
+> -   零冗余，对硬盘友好
+>     -   不要同一个资源复制几份。
+>     -   Unity内置资源需要单独处理。
+>     -   使用SBP。Built-in Pipeline有Bug，打包对Texture2D的引用时必然出现冗余。
+> -   低耦合，对内存友好
+>     -   加载A的时候，不要把不需要的B相关信息也加载进来。
+>     -   释放Bundle的时候资源不会相互掣肘。
+> -   Bundle数量要少，对IO性能友好
+>     -   加载一个需要的资源时，能尽量少地加载新的Bundle。
+>     -   Bundle数量越多，内存占用越高，也更容易导致加载一个资源需要一口气加载一大堆Bundle的情况。
 
 # 常见的零冗余打包方案
 ## 反向引用计数法
@@ -102,13 +92,13 @@ Spine动画通常至少包含六个文件，这种情况下，比较合理的打
 
 如上图，role.png的反向引用为
 
-```Plain
+```csharp
 [A.prefab, B.prefab]
 ```
 
 几乎所有打包方案都会获取资源的反向引用：
 
-```C#
+```csharp
 /// <summary>
 /// 获取全量反向引用
 /// </summary>
@@ -162,7 +152,8 @@ public static void GenerateInvertReference(Dictionary<string, CompactFileBundleI
 
 值得注意的是，如果不谨慎考虑规则的合理性和实现方法的话，自定义规则可能会引入一些额外的问题。例如笔者就见过一些自定义规则导致了打出的bundle之间有环引用，进一步导致引用关系混乱的问题。
 
-<mark> Bundle之间总是不应该出现环引用，因为这说明这几个bundle总是需要一起加载，那么它们其实应该打成同一个bundle才对。如果出现了环引用，那么需要考虑一下分包规则是不是有什么问题。<mark>
+{: .note}
+> Bundle之间总是不应该出现环引用，因为这说明这几个bundle总是需要一起加载，那么它们其实应该打成同一个bundle才对。如果出现了环引用，那么需要考虑一下分包规则是不是有什么问题。
 
 ## 反向查找法
 
@@ -190,7 +181,8 @@ public static void GenerateInvertReference(Dictionary<string, CompactFileBundleI
 
 图中虚线代表反向引用。
 
-<mark>注意，这里讲解的是理想情况下，实际情况下并非如此。我们将在之后讨论实际的情况。<mark>
+{: .note}
+> 注意，这里讲解的是理想情况下，实际情况下并非如此。我们将在之后讨论实际的情况。
 
 下面提到的包名不是最终的包名，只是一个例子。实际上可以将前面的点号替换为\_之类的符号，最终换成哈希值。
 
@@ -211,7 +203,7 @@ public static void GenerateInvertReference(Dictionary<string, CompactFileBundleI
 
 算法如下：
 
-```C#
+```csharp
 /// <summary>
 /// 计算资源所在Bundle的名字
 /// </summary>
@@ -268,7 +260,7 @@ public static string GetAssetBundleName(CompactFileBundleInfo asset, Dictionary<
 ## 反向查找法的增强
 对于上面的问题，可以通过完善反向查找法的逻辑来解决。这种方法在继承直接反向引用的包名时，保留了更多的信息。
 
-```Plain
+```csharp
 /// <summary>
 /// 计算资源的递归反向引用集
 /// </summary>
@@ -302,7 +294,7 @@ public static SortedSet<string> GetAssetBundleName(CompactFileBundleInfo asset, 
 
 通过继承所有的直接反向引用，来保留所有的引用信息。
 
-```Plain
+```csharp
 foreach (var asset in allAssetsDict.Values)
 {
     var hashSet = GetAssetBundleName(asset, allAssetsDict);
@@ -318,7 +310,6 @@ foreach (var asset in allAssetsDict.Values)
 由于保留了更多反向引用信息，算法可以得知：虽然两个直接反向引用被打入了不同的Bundle，但role1.png、role2.png、role3.png的直接反向引用是相同的，所以也会被打入同一个Bundle。遂解决了上面提到的情况。
 
 但即使是加强的反向查找法，也无法解决Spine打包中提到的问题。
-
 
 ![whiteboard_exported_image (16)](/assets/whiteboard_exported_image_16.png)
 
@@ -393,11 +384,11 @@ foreach (var asset in allAssetsDict.Values)
     
 -   ……
 
-![](https://rcnly4ddjvpc.feishu.cn/space/api/box/stream/download/asynccode/?code=ODIxYTI2NzkzMDVkZTFiZTk4MDRlMDkxNWI5NmEzYTdfdTRDQVNzZjBrZzFmSVFyMGxpM0RHR0o3RWh3d0Q0Yk5fVG9rZW46RHptOWJkYmM1b3hSSTd4cW1FdmNtQmhobjRlXzE3NzA4MDQ5OTM6MTc3MDgwODU5M19WNA)
-
+> ![hierachy](/assets/hierachy.png)
+> 
 > 图中展示了一种一级资源管理方式，按照业务逻辑进行分类，按照$符号文件夹名管理。每个业务逻辑可以拥有自己的资源文件夹，其中存放了该业务逻辑使用的UI界面、浮窗预制件和lua代码文件。如果需要的话，还可以有其他的文件。UI预制件所引用的**贴图、动画、材质或其它资源**不会放在这里，而是放在美术/策划用于堆放素材的另一个不被$符号标记的文件夹。这些资源将在打包时被自动囊括进来，并按照规则分入适当的Bundle。
 
-不好分类的页面/浮窗可以统一放在一个文件夹里。
+不容易分类的页面/浮窗可以统一放在一个文件夹里。
 
 也可以选择将同类的资源也可以统一放在同一个文件夹中，如将所有UI预制件放在同一个文件夹里，将代码文件放在另一个文件夹。虽然对于分包算法来说不会有太大区别，但这会让开发人员在开发和维护业务逻辑时，在寻找想要的文件这件事上浪费一些时间。
 
@@ -415,7 +406,7 @@ foreach (var asset in allAssetsDict.Values)
 
 ![whiteboard_exported_image (8)](/assets/whiteboard_exported_image_8.png)
 
-```Plain
+```csharp
 [MenuItem("Tools/BuildBundleCompact")] 
 public static void Build()
 {
@@ -437,7 +428,7 @@ public static void Build()
 
 和其他分包算法类似，该算法也需要获取所有需要打入Bundle的资源，并计算出它们应当被分配到哪个Bundle里。
 
-```Plain
+```csharp
 public static Dictionary<string, CompactFileBundleInfo> GetCompactFileBundleInfoDict()
 {
     // 获取一级资源

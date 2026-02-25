@@ -43,6 +43,27 @@ plugins:
   - jekyll-include-cache
   - jekyll-archives
 
+# Better code presentation
+# Enable copy button on code blocks
+enable_copy_code_button: true
+
+# Turn on line numbers for fenced code blocks
+kramdown:
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
+
+# Disable HTML compression to avoid invalid markup with line-numbered code
+compress_html:
+  ignore:
+    envs: all
+
+# Callouts for highlighted notes
+callouts:
+  note:
+  # title: 提示
+    color: blue
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to

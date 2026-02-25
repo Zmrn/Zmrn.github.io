@@ -4,8 +4,6 @@ title: Home
 nav_order: 1
 ---
 
-欢迎来到 Anso 的文档站点。
-
 ## 文章列表
 
 <ul>

@@ -48,7 +48,7 @@ plugins:
   - jekyll-archives
 
   # 如需启用 remote_theme，需要同时在插件里加入 jekyll-remote-theme：
-  - jekyll-remote-theme
+  # - jekyll-remote-theme
 
 # Better code presentation
 # Enable copy button on code blocks

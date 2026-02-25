@@ -31,8 +31,3 @@ jobs:
           publish_dir: _site
           publish_branch: gh-pages
           force_orphan: true
-
-# _config.yml
-remote_theme: just-the-docs/just-the-docs
-plugins:
-  - jekyll-remote-theme

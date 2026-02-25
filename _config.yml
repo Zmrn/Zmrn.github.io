@@ -35,6 +35,10 @@ github_username:  jekyll
 # Build settings
 # Use the just-the-docs theme as a Ruby gem
 theme: just-the-docs
+
+# 如果改用 GitHub Pages 自带的远程主题方式，可以使用下面这一行：
+# remote_theme: just-the-docs/just-the-docs
+
 plugins:
   - jekyll-feed
   - jekyll-sitemap
@@ -42,6 +46,9 @@ plugins:
   - jekyll-paginate
   - jekyll-include-cache
   - jekyll-archives
+
+  # 如需启用 remote_theme，需要同时在插件里加入 jekyll-remote-theme：
+  - jekyll-remote-theme
 
 # Better code presentation
 # Enable copy button on code blocks

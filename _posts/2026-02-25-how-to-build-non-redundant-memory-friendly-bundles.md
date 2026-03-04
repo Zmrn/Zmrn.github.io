@@ -173,7 +173,7 @@ public static void GenerateInvertReference(Dictionary<string, CompactFileBundleI
 2.  当该资源所有的**直接反向引用**Bundle名相同时，自己也使用该Bundle名；否则使用自己的路径作为Bundle名。
     
 
-最后可得**每个资源应当被分配到哪个Bundle**的信息。Bundle名可以在最后替换成哈希值。
+最后可得**每个资源应当被分配到哪个Bundle**的信息。Bundle名可以在最后替换成哈希值。用这种方式处理环引用的对象时可能需要一些技巧。
 
 **理想情况下**，这些文件的反向引用看起来是这样的：
 
@@ -252,7 +252,7 @@ public static string GetAssetBundleName(CompactFileBundleInfo asset, Dictionary<
 
 预制件实际上是直接持有材质的引用的。所以该打包方案并不会如预期一般打出三个bundle，而会将材质和贴图单独打包，打出4个bundle。
 
-### 还有一种情况
+### 还有一些情况
 
 ![whiteboard_exported_image (11)](/assets/whiteboard_exported_image_11.png)
 对于传统的反向查找法，面对刚才提到过的这种情况，三张贴图也会被分别打进3个Bundle里。
@@ -315,7 +315,11 @@ foreach (var asset in allAssetsDict.Values)
 
 材质文件的直接反向引用列表为\[A.prefab, B.prefab, role\_Atlas.asset\]，依旧无法与其他Spine文件打入同一个Bundle。
 
-面对这种情况，当然可以辅以自定义规则法特殊处理Spine动画文件。但是，就没有一种更加完善的打包方案，能在不进行特殊处理的情况下解决这个问题吗？
+### 还有一些情况
+![whiteboard_exported_image (11)](/assets/whiteboard_exported_image_17.png)
+类似的，对于这种情况：C的直接反向引用为[A.prefab, D.prefab]，D的直接反向引用为[B.prefab, C.prefab]，所以C和D也无法打入同一个bundle。
+
+那么有没有一种更加完善的打包方案，能在不进行特殊处理的情况下解决这个问题？
 
 ## 资源的分级：一级资源和依赖资源
 
@@ -530,7 +534,7 @@ public static Dictionary<string, CompactFileBundleInfo> GetCompactFileBundleInfo
 
 通过简单的字符串拼接，就可以将资源正确分配到所在的Bundle。可以注意到，role2的Spine动画由于只被C.prefab引用，按照目前的命名规则，会和C.prefab放到同一个Bundle里。而role的Spine动画由于被两个一级引用持有，会创建一个名为A\_prefab\_\_B\_prefab.ab的新资源包。这样，程序就生成了本节开头的分包图。
 
-将一级引用和二级引用的表结合起来，就得到了最终的分包策略表：
+将一级引用和二级引用的表结合起来，可以得到最终的分包策略表：
 
 |     |     |     |
 | --- | --- | --- |
@@ -573,4 +577,8 @@ public static Dictionary<string, CompactFileBundleInfo> GetCompactFileBundleInfo
 |     | role2.png |
 
 按照该表打包即可。
-该算法可以基于反向查找法进行优化来实现，或是直接按照上面描述的顺序来实现，这里就不提供具体代码了。
+
+![whiteboard_exported_image (11)](/assets/whiteboard_exported_image_17.png)
+对于刚才提到的这个问题：C的一级引用为[A.prefab, B.prefab]，D的一级引用为[A.prefab, B.prefab]，所以C和D会被打进同一个bundle，不会出现环引用。
+
+该算法可以基于反向查找法进行优化来实现（代码会比较短，处理环引用的时候需要一些技巧），或是直接按照上面描述的顺序来实现（更简单直接，实现会长一些），这里不提供具体代码。

@@ -1,0 +1,69 @@
+// 自定义样式 - 减少左侧空白区域
+
+// 减少侧边栏的左侧内边距和位置
+.side-bar {
+  padding-left: 0.5rem !important;
+  left: 0 !important;
+}
+
+// 减少导航列表的左侧内边距
+.site-nav {
+  padding-left: 0 !important;
+}
+
+// 1. 减少主容器的左侧内边距
+.main {
+  padding-left: 0 !important;
+}
+
+// 2. 减少内容包装容器的左侧内边距
+.main-content-wrap {
+  padding-left: 1rem !important;
+}
+
+// 3. 减少主内容区域的左侧内边距
+.main-content {
+  padding-left: 0 !important;
+}
+
+// 4. 针对中等尺寸屏幕
+@media (min-width: 50rem) {
+  .side-bar {
+    width: 18rem !important;
+    padding-left: 0.5rem !important;
+    align-items: flex-start !important;  // 让内容靠左对齐而不是靠右
+  }
+  
+  // 修正主内容区域的左边距，让它紧贴侧边栏
+  .side-bar + .main {
+    margin-left: 18rem !important;  // 侧边栏宽度
+  }
+  
+  .main-content-wrap {
+    padding-left: 1.5rem !important;
+  }
+}
+
+// 5. 针对大屏幕 - 修复左侧大量空白的问题
+@media (min-width: 66.5rem) {
+  .side-bar {
+    width: 20rem !important;  // 固定宽度，不使用复杂计算
+    min-width: 20rem !important;
+    padding-left: 0.5rem !important;
+    align-items: flex-start !important;  // 让内容靠左对齐
+  }
+  
+  // 关键修复：让主内容紧贴侧边栏，不使用动态空白计算
+  .side-bar + .main {
+    margin-left: 20rem !important;  // 固定为侧边栏宽度，不使用max()计算
+  }
+  
+  .main-content-wrap {
+    padding-left: 2rem !important;
+    max-width: none !important;
+  }
+  
+  .main-content {
+    max-width: none !important;
+  }
+}

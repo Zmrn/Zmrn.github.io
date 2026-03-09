@@ -71,6 +71,11 @@ callouts:
   # title: 提示
     color: blue
 
+# Include additional files/folders in Jekyll build
+# This ensures all subfolders within _posts (like image folders) are copied to _site
+include:
+  - _posts
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to

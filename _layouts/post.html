@@ -1,0 +1,127 @@
+---
+layout: default
+---
+
+<div class="page-wrap">
+  <div class="main-content-wrap">
+    <article class="main-content">
+      <h1>{{ page.title }}</h1>
+      
+      {% if page.categories %}
+      <div class="post-meta">
+        <span class="post-category">分类: {{ page.categories | join: ', ' }}</span>
+      </div>
+      {% endif %}
+      
+      {{ content }}
+    </article>
+  </div>
+  
+  <aside class="side-toc">
+    <nav class="toc-nav">
+      <div class="toc-title">目录</div>
+      <div class="toc-content">
+        {% include toc.html %}
+      </div>
+    </nav>
+  </aside>
+</div>
+
+<style>
+.main {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-wrap {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content-wrap article {
+  max-width: none;
+}
+
+.side-toc {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  width: 280px;
+  height: fit-content;
+  padding: 1rem;
+  border-left: 1px solid #eeebee;
+  flex-shrink: 0;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #5c5962;
+}
+
+.toc-nav {
+  font-size: 0.875rem;
+}
+
+.toc-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc-content li {
+  margin: 0.25rem 0;
+}
+
+.toc-content a {
+  color: #5c5962;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.toc-content a:hover {
+  color: #7253ed;
+}
+
+.toc-content ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc-content li li a {
+  font-size: 0.8125rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #5c5962;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eeebee;
+}
+
+@media (max-width: 66.5rem) {
+  .page-wrap {
+    flex-direction: column;
+  }
+  
+  .side-toc {
+    position: static;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eeebee;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+}
+</style>

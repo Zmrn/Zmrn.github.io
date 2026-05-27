@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "在 Unity 编辑器标题栏显示 Git 分支名"
+title: "在 Unity 编辑器标题栏显示项目路径和 Git 分支名"
 categories: unity
 ---
 

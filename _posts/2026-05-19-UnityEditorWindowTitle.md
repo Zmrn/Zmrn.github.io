@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "在 Unity 编辑器标题栏显示项目路径和 Git 分支名"
+title: "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名"
 categories: unity
 ---
 
@@ -9,11 +9,9 @@ categories: unity
 >
 > 调查后发现了相关资料：https://zhuanlan.zhihu.com/p/462453808
 >
-> 基于此文章的思路，提供一个在Unity标题栏追加项目分支名的脚本，仅支持Windows系统。
->
-> 不过这个问题只是在Unity里解决了，在使用IDE打开脚本的时候，依旧无法通过标题栏得知这些信息。
+> 基于此文章的思路，提供一个在Unity标题栏追加项目分支名的脚本，Unity 中仅支持Windows系统。
 
-# 效果
+# Unity 效果
 
 应用前：
 
@@ -29,7 +27,7 @@ MyProject - SampleScene - PC, Mac & Linux Standalone - Unity 2022 [Master]
 
 标题末尾会追加当前 git 分支名，方便在多个 Unity 编辑器窗口之间切换时快速辨别分支。
 
-# 代码
+# Unity 代码
 
 将代码保存为脚本 `UpdateUnityEditorProcess` 放到项目的任意 `Editor` 文件夹下即可。脚本会在编辑器启动后自动运行。
 
@@ -224,3 +222,11 @@ class UpdateUnityEditorTitlePostprocessor : AssetPostprocessor
 
 #endif
 ```
+
+# 修改 VS Code的Title
+
+VS Code对这样的需求本来就有支持。在【File/Preferences/Settings/User/Window/Title】里可以对VS Code的Title进行订制，相关参数：
+
+`${rootPath}` 项目路径
+
+`${activeRepositoryBranchName}` 分支名

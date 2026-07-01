@@ -22,7 +22,7 @@ categories: unity
 
 两者设计时可继承自同一个基类，但在导航逻辑上有本质区别：Page 由导航栈驱动，Floating 由显示/隐藏事件驱动。
 
-大多数界面都应该是 Page ，但是对于一些弹窗则应该使用 Floating 来实现。这些 Floating 通常可能出现在任何界面的上面，并且根据需求允许同时展示多个不同的 Floating 。
+大多数界面都应该是 Page ，但是对于一些弹窗则应该使用 Floating 来实现。这些 Floating 通常出现在 Page 的前面，并且根据需求允许同时展示多个不同的 Floating 。
 
 ![RoleInfoPage 示例](/_posts/2026-07-01-UIManagement/role-info-page.png)
 

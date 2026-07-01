@@ -267,7 +267,7 @@ UI 动画通常使用 Animator 或 Tween 插件 来实现。其中 Animator 的�
 |---|---|
 | `autoPlayWhenEnable` | 节点 `OnEnable` 时自动播放入场动画 |
 | `needTime` | 动画时长（秒），通常使用默认值，不推荐修改 |
-| `waitTime` | 开始前的延迟时间，用于错开同一页面内多个元素的动画 |
+| `waitTime` | 开始前的延迟时间，用于错开同一页面内多个元素的动画，或让一个对象在不同时间播放不同动画。如果你不嫌麻烦，这个机制甚至可以让你用 UI 对象的轨迹写一个惨字 |
 | `overrideCurve` / `easeCurve` | 是否覆盖默认曲线，默认为 EaseInOut |
 
 **核心方法：**

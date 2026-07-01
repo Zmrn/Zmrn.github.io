@@ -157,8 +157,8 @@ Action<Floating, bool>  FloatingDisplayChanged  // 浮窗显示/隐藏状态变�
 Page / Floating 的 Prefab 文件名**必须与脚本名和类名完全一致**，系统在运行时将类名作为预制件资源的地址去加载，省去了任何手写映射：
 
 ```
-类名: LoginPage      → Prefab: LoginPage.prefab   → Address: loginpage.prefab
-类名: ShopFloating   → Prefab: ShopFloating.prefab → Address: shopfloating.prefab
+类名: LoginPage      → Prefab: LoginPage.prefab
+类名: ShopFloating   → Prefab: ShopFloating.prefab
 ```
 
 这个约定的好处是：新增一个页面只需建文件、写脚本，不需要在任何配置表里登记。当我们使用 ForwardAsync 打开界面时，通过传入一个相应界面脚本的泛型即可打开。不需要在代码中管理字符串，直接用类名就可以找到预制件。

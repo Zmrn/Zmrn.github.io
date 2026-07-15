@@ -1,0 +1,772 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+
+    
+    .site-nav > ul.nav-list:first-child > li:not(:nth-child(8)) > a,
+    .site-nav > ul.nav-list:first-child > li > ul > li a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:not(:first-child) a,
+    .site-nav li.external a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:first-child > li:nth-child(8) > a {
+      font-weight: 600;
+      text-decoration: none;
+    }.site-nav > ul.nav-list:first-child > li:nth-child(8) > button svg {
+      transform: rotate(-90deg);
+    }.site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(8) > ul.nav-list {
+      display: block;
+    }
+  </style>
+
+  
+
+  
+    <script src="/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>粒子池的实现 | Anso</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="粒子池的实现" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description." />
+<meta property="og:description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description." />
+<link rel="canonical" href="/_posts/2026-03-10-ParticlePool.html" />
+<meta property="og:url" content="/_posts/2026-03-10-ParticlePool.html" />
+<meta property="og:site_name" content="Anso" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="粒子池的实现" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.","headline":"粒子池的实现","url":"/_posts/2026-03-10-ParticlePool.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/" class="site-title lh-tight">
+  Anso
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/" class="nav-list-link">Home</a></li><li class="nav-list-item"><a href="/_posts/2026-03-09-IoU.html" class="nav-list-link">C#实现的Rotated IoU算法</a></li><li class="nav-list-item"><a href="/_posts/2026-05-19-UnityEditorWindowTitle.html" class="nav-list-link">在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名</a></li><li class="nav-list-item"><a href="/_posts/2026-07-10-ServerDrivenStateSync.html" class="nav-list-link">如何优雅地传递服务器数据变化？</a></li><li class="nav-list-item"><a href="/_posts/2026-02-25-bundle.html" class="nav-list-link">如何构建零冗余又内存友好的资源打包方案？</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIManagement.html" class="nav-list-link">栈式导航的 Unity UI 管理方案</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIAnimation.html" class="nav-list-link">简易 UI 过渡动画系统</a></li><li class="nav-list-item"><a href="/_posts/2026-03-10-ParticlePool.html" class="nav-list-link">粒子池的实现</a></li></ul>
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search Anso" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search Anso</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  
+  
+</div>
+
+    <div class="main-content-wrap">
+      
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <div class="page-wrap">
+  <div class="main-content-wrap">
+    <article class="main-content">
+<h1>
+  
+  
+    粒子池的实现
+  
+  
+</h1>
+    
+      
+      
+      <div class="post-meta">
+        <span class="post-category">分类: unity</span>
+      </div>
+      
+      
+      <blockquote class="note">
+  <p>Unity的粒子系统（ParticleSystem）占用的内存很大，一个粒子系统会占用10KB左右的内存，哪怕是什么都没有修改的默认粒子也会占用9KB+。一些未加克制的项目中会使用大量的粒子系统，包含未显示的粒子在内，可能会有一万以上甚至数万个粒子系统，导致粒子系统占用的内存达到数百MB。在较低端的iOS系统上RAM非常宝贵，内存占用太多很容易导致app crash，所以对于有这种情况的项目来说，想办法节约粒子系统的内存十分有必要。</p>
+
+  <p>本文提供的粒子池实现仓库： https://gitee.com/Anso/unity-particle-pool</p>
+</blockquote>
+<h1 id="看看官方是怎么说的">
+  
+  
+    <a href="#看看官方是怎么说的" class="anchor-heading" aria-labelledby="看看官方是怎么说的"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 看看官方是怎么说的？
+  
+  
+</h1>
+    
+
+<p>Unity官方也注意到了这个问题，并描述了一种可能的“建议”：</p>
+
+<blockquote>
+  <p><strong>粒子系统池</strong></p>
+
+  <p>对粒子系统建池时，请注意它们至少消耗 3500 字节的内存。内存消耗根据粒子系统上激活的模块数量而增加。停用粒子系统时不会释放此内存；只有销毁粒子系统时才会释放。</p>
+
+  <p>从 Unity 5.3 开始，大多数粒子系统设置都可在运行时进行操作。对于必须汇集大量不同粒子效果的项目，将粒子系统的配置参数提取到数据载体类或结构中可能更有效。</p>
+
+  <p>需要某种粒子效果时，“通用”粒子效果池即可提供必需的粒子效果对象。然后，可将配置数据应用于对象以实现期望的图形效果。</p>
+
+  <p>这种方案比尝试汇集给定场景中使用的粒子系统的所有可能变体和配置会更具内存使用效率，但需要大量的工程努力才能实现。</p>
+</blockquote>
+
+<p>官方给出的方案就只有这几行描述，距离具体实现还差得多。搜索可以发现已经有人按照这个思路初步实现了一个版本：</p>
+
+<p><a href="https://github.com/CoolOverflow/UnityParticleSystemMemoryOptimization">https://github.com/CoolOverflow/UnityParticleSystemMemoryOptimization</a></p>
+
+<p>这个仓库里实现了基本的粒子池功能，将粒子参数记录在一个结构体中。这个结构体实际运行中占用内存约4KB+，相比原本的尺寸已经低了很多了。不过该项目完成度不高，使用起来还是颇为不便，也遗留了许多问题。本文基于这个思路，提供一个更加完善的，实际使用起来更为方便的实现。</p>
+<h1 id="我们想要一个什么样的粒子池">
+  
+  
+    <a href="#我们想要一个什么样的粒子池" class="anchor-heading" aria-labelledby="我们想要一个什么样的粒子池"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 我们想要一个什么样的粒子池？
+  
+  
+</h1>
+    
+<h2 id="池化粒子降低内存占用">
+  
+  
+    <a href="#池化粒子降低内存占用" class="anchor-heading" aria-labelledby="池化粒子降低内存占用"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 池化粒子降低内存占用
+  
+  
+</h2>
+    
+
+<p>将原本的粒子在Disable的时候移动到池子里，Enable的时候重新附加回来。通过这种方式大幅降低同时存在的粒子数量来降低内存消耗。</p>
+
+<p>这需要在原本的粒子系统游戏对象上挂载一个Dummy组件，来监听游戏对象的Enable/Disable。上面提到的开源仓库就是这么做的。</p>
+
+<p>本文的方案是，在运行游戏中实例化游戏对象时，删除游戏对象上的<strong>ParticleSystem</strong>（和<strong>ParticleSystemRenderer</strong>），将被删除的粒子系统的数据记录下来。当这个游戏对象Enable时，从粒子池中获取一个仅挂载了粒子系统的游戏对象（这里称之为<strong>裸粒子</strong>），将这个游戏对象作为原本游戏对象的子物体。</p>
+
+<p>粒子池可以在加载游戏时预加载几十甚至数百个裸粒子以供使用。除非同屏显示的粒子数量超过预加载的数量，否则游戏中不需要派生新的裸粒子。</p>
+<h2 id="记录粒子参数">
+  
+  
+    <a href="#记录粒子参数" class="anchor-heading" aria-labelledby="记录粒子参数"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 记录粒子参数
+  
+  
+</h2>
+    
+
+<p>由于从粒子池冲拿回的粒子参数可能和最初的不一样，所以需要记录一下粒子的参数，在拿到裸粒子后将参数赋值给它。这需要让Dummy组件记录粒子的原始参数信息。</p>
+
+<p>有很多粒子系统的参数可能是一样的，例如同一种子弹发射了数十发，会有至少数十个粒子使用的是同一套参数。为了节约内存，我们希望这些粒子可以使用同一份参数。</p>
+
+<p>当我们对一个游戏对象应用粒子池时，先通过FNV算法计算粒子系统的所有参数得到一个哈希值，用粒子参数管理器哈希表里保存粒子的参数，即可做到同类粒子共享同一份数据。记录参数的时候，Dummy组件需要先计算并记录粒子的哈希值，如果发现这个哈希值是新值，才将粒子参数保存到管理器的哈希表里。使用哈希算法可能出现哈希碰撞，不过概率极低，实际使用中还没有遇到过这种情况。而且这种问题如果发生会非常明显，让特效负责人稍微修改一下粒子参数中的小数位即可改变哈希值规避碰撞。</p>
+
+<p>值得注意的是，Dummy是成可以被派生（Instantiate）的。也就是说，以一个已经应用了粒子池的游戏对象（已经删除了原本的粒子系统，并记录了粒子数据哈希值的游戏对象）作为母本进行派生，派生出的对象也应是可用的。由于我们的Dummy实际上只记录了一个参数的哈希值和少数其他的几个变量，这是很容易做到的。基于此，如果有频繁发射子弹之类的需求，可以将一个已经应用过粒子池，并Disable的子弹作为母本来进行派生。这样可以防止每次创建新的子弹都要重新应用一次粒子池。</p>
+<h2 id="尽量减少特效负责人在开发中的负担">
+  
+  
+    <a href="#尽量减少特效负责人在开发中的负担" class="anchor-heading" aria-labelledby="尽量减少特效负责人在开发中的负担"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 尽量减少特效负责人在开发中的负担
+  
+  
+</h2>
+    
+
+<p>新增的工具不应降低开发效率，我们希望特效负责人在制作特效的时候能够一如既往，不要增加额外的工作。所以大多数工作需要在运行中进行。有两种方式：</p>
+
+<ol>
+  <li>
+    <p>在非运行时，我们可以通过手动给预制件根物体附加一个标记组件，来时期在运行时自动执行记录参数和删除粒子系统的工作。这要求我们对所有需要应用粒子池的预制件手动附加组件。</p>
+  </li>
+  <li>
+    <p>在游戏中如对象池之类的固定用于派生预制件的接口中统一挂载粒子池标记组件并运行，这样就不需要手动修改预制件。不过这要求游戏本身对对象派生功能有比较统一的一个或数个接口，改造起来可能需要一定的时间。</p>
+  </li>
+</ol>
+<h1 id="需要注意的问题">
+  
+  
+    <a href="#需要注意的问题" class="anchor-heading" aria-labelledby="需要注意的问题"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 需要注意的问题
+  
+  
+</h1>
+    
+
+<p>进行粒子池的开发前，有几个问题需要注意：</p>
+<h2 id="看不见的-particlesystemrenderer">
+  
+  
+    <a href="#看不见的-particlesystemrenderer" class="anchor-heading" aria-labelledby="看不见的-particlesystemrenderer"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 看不见的 ParticleSystemRenderer
+  
+  
+</h2>
+    
+
+<p>当你给一个GameObject附加<strong>ParticleSystem</strong>时，Unity会同时给这个GameObject附加一个<strong>ParticleSystemRenderer</strong>组件。<strong>ParticleSystemRenderer</strong>也会占用一定的内存。这个组件在Inspector里是不可见的，哪怕打开Debug模式也看不到，所以很容易被忽视。<strong>ParticleSystemRenderer</strong>的参数可以直接在<strong>ParticleSystem</strong>的Renderer栏位进行配置，所以平时即使隐藏掉也不会有什么问题。但是如果在删除粒子的时候只调用了<strong>Destroy(ParticleSystem)</strong>，那么 <strong>ParticleSystemRenderer</strong> 是不会被删除的。</p>
+
+<p>虽然<strong>ParticleSystemRenderer</strong>是不可见的，但是通过GetComponent还是可以获取到的，也可以通过<strong>Destroy</strong>进行删除。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+</pre></td><td class="rouge-code"><pre><span class="k">this</span><span class="p">.</span><span class="n">gameObject</span><span class="p">.</span><span class="n">AddComponent</span><span class="p">&lt;</span><span class="n">ParticleSystem</span><span class="p">&gt;();</span>
+<span class="c1">// 给游戏对象附加粒子系统后，立刻就可以获取到ParticleSystemRenderer</span>
+<span class="kt">var</span> <span class="n">particleSystemRenderer</span> <span class="p">=</span> <span class="k">this</span><span class="p">.</span><span class="n">gameObject</span><span class="p">.</span><span class="n">GetComponent</span><span class="p">&lt;</span><span class="n">ParticleSystemRenderer</span><span class="p">&gt;();</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+<h2 id="无法直接池化component">
+  
+  
+    <a href="#无法直接池化component" class="anchor-heading" aria-labelledby="无法直接池化component"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 无法直接池化Component
+  
+  
+</h2>
+    
+
+<p>Component依附于GameObject，我们无法直接池化Component，只能池化GameObject。如果每次Enable的时候添加粒子系统，Disable的时候删除粒子系统，那样性能消耗会非常的高。</p>
+<h2 id="无法在enable和disbale时setparent">
+  
+  
+    <a href="#无法在enable和disbale时setparent" class="anchor-heading" aria-labelledby="无法在enable和disbale时setparent"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 无法在Enable和Disbale时SetParent
+  
+  
+</h2>
+    
+
+<p>在游戏对象Enable时给自己挂载一个子物体是做不到的，Unity不允许你这么做。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+</pre></td><td class="rouge-code"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">ParticleSystemDummy</span> <span class="p">:</span> <span class="n">MonoBehaviour</span>
+<span class="p">{</span>
+    <span class="p">...</span> <span class="c1">// 其它代码</span>
+    
+    <span class="k">public</span> <span class="k">void</span> <span class="nf">OnEnable</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="c1">// 获取池中的裸粒子</span>
+        <span class="kt">var</span> <span class="n">particleNode</span> <span class="p">=</span> <span class="n">ParticleSystemPool</span><span class="p">.</span><span class="n">Instance</span><span class="p">.</span><span class="nf">Get</span><span class="p">();</span>
+        <span class="c1">// 这是不行的！</span>
+        <span class="n">particleNode</span><span class="p">.</span><span class="nf">SetParent</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="n">transform</span><span class="p">);</span>
+        
+        <span class="p">...</span> <span class="c1">// 其它代码</span>
+    <span class="p">}</span>
+    
+    <span class="p">...</span> <span class="c1">// 其它代码</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>这会导致Unity报出一个错误：</p>
+
+<blockquote>
+  <p><span style="color: red;">Cannot set the parent of the GameObject ‘NakedParticle’ while activating or deactivating the parent GameObject.</span></p>
+</blockquote>
+
+<p>不过，在Enable时给自己子物体挂载一个子物体是没问题的。也就是说我们要增加一层缓冲层游戏对象用于存放实际播放的粒子。</p>
+
+<p>最终，粒子池看起来应该是这样的：</p>
+
+<figure style="text-align: center;">
+  <img src="/_posts/2026-03-10-ParticlePool/pp1.png" alt="pp1" />
+  <figcaption>编辑状态下的粒子和平时无异</figcaption>
+</figure>
+
+<figure style="text-align: center;">
+  <img src="/_posts/2026-03-10-ParticlePool/pp2.png" alt="pp2" />
+  <figcaption>运行时，原本的粒子被删除，下方挂载ParticleContent作为缓冲层，裸粒子应用了粒子的参数，被挂载在缓冲层的下面</figcaption>
+</figure>
+
+<figure style="text-align: center;">
+  <img src="/_posts/2026-03-10-ParticlePool/pp3.png" alt="pp3" />
+  <figcaption>当粒子被Disable时，裸粒子被移回粒子池等待复用</figcaption>
+</figure>
+
+<p>增加缓冲层也会性能有一定的影响，当同一帧同时Disable/Enable大量粒子的时候会因此导致一些额外消耗。不过目前没发现更好的做法，而且这些消耗本身并没有很高。</p>
+<h2 id="注意粒子系统间的引用关系">
+  
+  
+    <a href="#注意粒子系统间的引用关系" class="anchor-heading" aria-labelledby="注意粒子系统间的引用关系"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 注意粒子系统间的引用关系
+  
+  
+</h2>
+    
+
+<p>粒子系统可以通过子发射器（Sub Emitters）引用其他粒子系统。由于原本的粒子会在初始化的时候被删除，这部分的引用关系需要单独处理。可以在记录粒子数据时，将引用关系记录在Dummy中。虽然理论上可行，由于我在实际需求中并没有遇到很多这样的情况，所以没有进行支持。想要支持也并不困难。</p>
+
+<!-- ![pp4](/_posts/2026-03-10-ParticlePool/pp4.png) -->
+
+<figure style="text-align: center;">
+  <img src="/_posts/2026-03-10-ParticlePool/pp4.png" alt="pp4" />
+  <figcaption>粒子系统间的引用关系</figcaption>
+</figure>
+<h2 id="勾选了prewarm的粒子启动耗时很久">
+  
+  
+    <a href="#勾选了prewarm的粒子启动耗时很久" class="anchor-heading" aria-labelledby="勾选了prewarm的粒子启动耗时很久"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 勾选了Prewarm的粒子启动耗时很久
+  
+  
+</h2>
+    
+
+<p>即使不进行池化，勾选了Prewarm的粒子在Enable的时候也会非常耗时。这本身就是一个只有在真正需要的时候才会勾选的高消耗选项。粒子池不能支持池化这样的粒子，否则会出现严重的性能问题。不过大多数情况下，这个选项都是不需要勾选的。</p>
+<h2 id="注意粒子的scalingmode">
+  
+  
+    <a href="#注意粒子的scalingmode" class="anchor-heading" aria-labelledby="注意粒子的scalingmode"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 注意粒子的scalingMode
+  
+  
+</h2>
+    
+
+<p>如果粒子的scalingMode为Local的话，其缩放只会应用裸粒子本身的缩放，与父物体无关。所以在记录粒子数据的时候，还需要记录Transform中的缩放数据，在scalingMode为Local时，需要应用这个数据。</p>
+
+<blockquote class="note">
+  <p>理论上simulationSpace参数设置为World时也需要特殊处理，但我这边没有这种粒子，所以这里没有进行处理。需要处理的话将position之类的位置也进行记录即可。</p>
+</blockquote>
+<h2 id="注意直接引用粒子的情况">
+  
+  
+    <a href="#注意直接引用粒子的情况" class="anchor-heading" aria-labelledby="注意直接引用粒子的情况"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 注意直接引用粒子的情况
+  
+  
+</h2>
+    
+
+<p>对于Animator直接控制粒子上的参数的情况需要多加注意。由于实际运行中，原本的粒子在记录完数据后已经被删除了，Animator将无法正常控制粒子的参数。可以考虑新增一个Agent对象将需要操控的粒子参数暴露出来，把Agent挂在粒子系统的游戏对象上，在Animator中控制Agent对象上的参数作为替代，由Agent代理操作粒子参数。由于我这边并没有很多这样的需求，所以选择直接不对这样的粒子进行池化。</p>
+
+<p>其他地方也偶尔会有需要直接引用粒子的情况，这种情况需要基于粒子池进行专门的改造。不同项目的处理方式不同，无法统一，只能具体问题具体分析。</p>
+<h2 id="应用粒子系统的耗时">
+  
+  
+    <a href="#应用粒子系统的耗时" class="anchor-heading" aria-labelledby="应用粒子系统的耗时"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 应用粒子系统的耗时
+  
+  
+</h2>
+    
+
+<p>记录粒子系统通常可以在预加载之类的场景进行，对性能要求相对没有那么严苛。但是游戏中的粒子系统随时都有可能Enable/Disable，所以将记录的粒子参数应用到裸粒子上的性能消耗值得关注。</p>
+
+<p>由于一帧Enable的粒子数量不同，粒子参数复杂度不同，应用粒子的耗时会有很多变化。</p>
+
+<p>对于本文的实现，在实际项目的测试中得出了一些经验数据。测试中每帧同时Enable的粒子偶尔可能达到100个，多数情况是几十个。这已经不少了。</p>
+
+<p>一些低端安卓设备上，应用数量较多的粒子偶尔会需要数毫秒的耗时。虽然大多数时候消耗都在1ms以下，但是偶尔的耗时增加依旧是值得关注的，可能会影响帧率。中高端设备基本都可以在1ms以下。</p>
+
+<p>对于iOS系统，哪怕是一些比较旧的设备也基本可以稳定在1ms以下。iOS往往是内存导致闪退的重灾区，对性能有担忧又想要优化内存的话，可以考虑仅在编辑器和内存较少的iOS系统中启用该功能来节约内存。</p>
+<h3 id="通过共享节点链表实现的lru数据结构来降低裸粒子的取用代价">
+  
+  
+    <a href="#通过共享节点链表实现的lru数据结构来降低裸粒子的取用代价" class="anchor-heading" aria-labelledby="通过共享节点链表实现的lru数据结构来降低裸粒子的取用代价"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 通过【共享节点链表】实现的LRU数据结构来降低裸粒子的取用代价
+  
+  
+</h3>
+    
+
+<p>从粒子池中获取裸粒子时，这个裸粒子可能已经被使用过一次了。如果取用的裸粒子上的参数恰好是我们需要的，那就不需要再耗时去应用这些参数了。这种情况实际上十分常见，特别是当池子足够大，或部分特效在短时间内反复播放的时候。对于这种情况，我们可以直接把粒子放到原对象下进行重播，不再需要专门设置粒子的参数。如果实际使用中可以优先取用粒子池中我们需要的粒子的话，可以节约很多应用粒子参数的耗时。</p>
+
+<p>常见的对象池通常是一个队列结构，先进先出。每次取用对象时，从队列头部拿取一个对象。当对象需要回收时，则将其加入队列尾。</p>
+
+<p><img src="/_posts/2026-03-10-ParticlePool/pp5.png" alt="pp5" /></p>
+
+<p>可以看到，池子里已经有一个对象A了，但取出的对象却是D，以至于取用方不得不重新应用参数，将D转换为A来使用。如果我们能从池子中取出一个本来已经是A的对象，就不需要再重新应用参数了。但如果池子里已经有很多的对象了，最近使用过的粒子就不会很快被再次使用。常规的对象池由于总是取用最老的对象，不会取用最近使用过的粒子。
+为了提高已经用过的同类粒子命中率，不能再使用常规的队列结构了。</p>
+
+<blockquote class="note">
+  <p>我们需要一种方法，能够从池子中取出需要的对象，而不总是最老的对象。只有池子中没有需要的对象时，才取用最老的对象。实际上，这就是LRU算法。</p>
+</blockquote>
+
+<p>那么有没有一种方法，可以在保证取用和回收的时间复杂度为O(n)的前提下，每次取用都能保证命中（如果有的话）呢？有的。</p>
+
+<p><img src="/_posts/2026-03-10-ParticlePool/pp6.png" alt="pp6" /></p>
+
+<p>图中的对象池中共有7个对象，每个对象节点同时存在于两个不同的链表中。例如，虽然A1节点在图中出现了两次，但其实是同一个对象。</p>
+
+<p>共享节点链表本质上是一种LRU（Least Recently Used）结构，只是由于缓存可以持有多个同类对象，和常见的LRU算法有些许不同。LRU的基本思路是基于时间局部性提高缓存的命中率。
+时间局部性假设
+时间局部性（Temporal Locality）指的是如果一个程序在某个时刻访问了某个存储位置或指令，那么在不久的将来很可能再次访问同一存储位置或指令。换句话说，近期使用过的数据或指令很可能会被重复使用。
+共享节点链表是一个这样的数据结构：</p>
+<ul>
+  <li>每个节点同时存在于两个链表中，一个主链表，一个子链表。
+    <ul>
+      <li>主链表只有一个，保存所有节点的引用。
+        <ul>
+          <li>依旧按照队列的形式持有对象，最早放入池中的对象在最前面，最晚放入池中的对象添加到队尾。</li>
+        </ul>
+      </li>
+      <li>子链表有多个，保存每种不同类型对象的引用。
+        <ul>
+          <li>依旧按照队列的形式持有对象，但这个链表中的对象都是同类对象。</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>取用对象时，从字典中根据类型访问子链表，并取用第一个对象。
+    <ul>
+      <li>如果没有响应的子链表，那么从主链表的头部取用一个对象。</li>
+      <li>取用时，这个对象会从两个链表中同时删除。</li>
+    </ul>
+  </li>
+  <li>回收对象时，将该对象加入主链表的尾部，同时也加入相应子链表的尾部。
+    <ul>
+      <li>如果不存在相应子链表，那么创建一个子链表。</li>
+    </ul>
+  </li>
+</ul>
+
+<p>这种实现方式可以保证在对象池中有可以命中的对象时，必然会命中该对象。对象池中没有可以命中的对象时，拿取最老的对象。</p>
+
+    </article>
+  </div>
+  
+  <aside class="side-toc">
+    <nav class="toc-nav">
+      <div class="toc-title">目录</div>
+      <div class="toc-content">
+        <div id="toc-container"></div>
+
+<script>
+(function() {
+  const content = document.querySelector('.main-content');
+  if (!content) return;
+  
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (headings.length === 0) return;
+  
+  const tocContainer = document.getElementById('toc-container');
+  const toc = document.createElement('ul');
+  toc.className = 'toc-list';
+  
+  let currentLevel = 1;
+  let currentList = toc;
+  const stack = [toc];
+  
+  headings.forEach((heading, index) => {
+    // 跳过文章标题（第一个h1）
+    if (heading.tagName === 'H1' && index === 0) return;
+    
+    const level = parseInt(heading.tagName.substring(1));
+    const text = heading.textContent;
+    const id = heading.id || 'heading-' + index;
+    
+    if (!heading.id) {
+      heading.id = id;
+    }
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + id;
+    a.textContent = text;
+    a.className = 'toc-link toc-level-' + level;
+    li.appendChild(a);
+    
+    if (level > currentLevel) {
+      const newList = document.createElement('ul');
+      newList.className = 'toc-sublist';
+      const lastLi = currentList.lastElementChild;
+      if (lastLi) {
+        lastLi.appendChild(newList);
+      }
+      stack.push(newList);
+      currentList = newList;
+    } else if (level < currentLevel) {
+      const diff = currentLevel - level;
+      for (let i = 0; i < diff && stack.length > 1; i++) {
+        stack.pop();
+      }
+      currentList = stack[stack.length - 1];
+    }
+    
+    currentList.appendChild(li);
+    currentLevel = level;
+  });
+  
+  if (toc.children.length > 0) {
+    tocContainer.appendChild(toc);
+  }
+  
+  // 平滑滚动
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 更新URL但不滚动
+        history.pushState(null, null, this.getAttribute('href'));
+      }
+    });
+  });
+})();
+</script>
+
+      </div>
+    </nav>
+  </aside>
+</div>
+
+<style>
+.main {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-wrap {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content-wrap article {
+  max-width: none;
+}
+
+.side-toc {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  width: 280px;
+  height: fit-content;
+  padding: 1rem;
+  border-left: 1px solid #eeebee;
+  flex-shrink: 0;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #5c5962;
+}
+
+.toc-nav {
+  font-size: 0.875rem;
+}
+
+.toc-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc-content li {
+  margin: 0.25rem 0;
+}
+
+.toc-content a {
+  color: #5c5962;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.toc-content a:hover {
+  color: #7253ed;
+}
+
+.toc-content ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc-content li li a {
+  font-size: 0.8125rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #5c5962;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eeebee;
+}
+
+@media (max-width: 66.5rem) {
+  .page-wrap {
+    flex-direction: column;
+  }
+  
+  .side-toc {
+    position: static;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eeebee;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+}
+</style>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+
+  
+
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
+

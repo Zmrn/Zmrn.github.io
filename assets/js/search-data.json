@@ -1,0 +1,436 @@
+{"0": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "一个简单的冗余",
+    "content": "如果游戏中有两个角色的预制件A和B，他们可以出现在地图上进行战斗。同时，他们持有着同一张图片的引用。 . 图中蓝色块代表预制件（或其他会被直接加载的资源），白色块代表被预制件引用的资源。 . 这种情况，两个资源同时引用另一个资源，有哪些打Bundle的方案呢？我们使用绿色的块将同一个bundle中的文件包裹起来，以展示几种不同的分包方案： . 打进同一个bundle 打进两个不同bundle 打进三个不同bundle 当然还有更多不太可取的打包方案，这里不再枚举。 . 在不同场景下，不同的打包方案可能各有优劣。 . | 方案1：在A，B总是同时被加载和卸载时，只看资源分配的话，这是最优的方案（但未必是合理的方案）。内存占用和Bundle数量、大小都是该需求下的最优解。但是这种情况只是少数，而且无法保证A和B是不是总是同时加载和卸载。由于A和B耦合在一起，如果游戏中A先于B卸载了，那么必须在B也卸载后，这个Bundle才能被彻底卸载；如果只想加载A，这种情况也会无法避免地将一部分多余的B的表单信息加载进来。 . | 方案2：在A和B不保证同时出现时，是一种可以接受的方案。对内存是最优解，但是出现了冗余资源。role.png同时被包含在两个Bundle中，资源占用的硬盘空间变大了。 . | 方案3：不论A和B是否同时出现，该方案在内存和资源占用上都是最优解，但Bundle数量是最多的。Bundle的信息本身也会占用一定的容量，也会反映在内存和硬盘的占用上。同时，Bundle数量越多，加载的IO消耗也越高。所以我们在考虑内存、硬盘大小的同时，还要尽量让Bundle数量更少。但总的来说，考虑到更普遍、更常见的状况，方案3是综合最佳的。方案3兼顾内存和硬盘的容量，在满足一些条件的情况下还可以通过程序自动生成这样的分包方案。 不过，本节的例子还是太简单了一些。 . | . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E5%86%97%E4%BD%99",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#一个简单的冗余"
+  },"1": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "一个稍复杂的冗余",
+    "content": "如果我们的角色持有的引用并非图片，而是Spine动画呢？ . Spine动画通常至少包含六个文件，这种情况下，比较合理的打包是什么样的呢？ . 如果只有A.prefab引用了这个Spine动画，那么把Spine动画的文件和预制件A打包在同一个Bundle里就是最优解。这种情况下，加载一次Bundle就可以将预制件A所需要的依赖全部加载进来。 . 那么如果同时有两个预制件引用了同一个Spine动画呢？ . 预制件A和B同时引用这个Spine动画。可以看出，Spine的六个文件中，有五个都是由Spine的主配置文件XXX_SkeletonData.asset间接持有引用，不被预制件直接引用。多数（但不是全部）情况下，我们不会单独加载或引用其中的一个文件，或绕过XXX_SkeletonData.asset访问后面的文件。 . 参考之前的案例，我们可以得出上面的分包方案。将Spine动画的六个文件单独分包，A和B也单独分包。 . 如果再加入一个不同的角色，那么更好的分包方案应该是这样的： . 由于role2只被C.prefab引用，它应该和C.prefab打入同一个Bundle。 . 一个优秀的打包方案应该满足以下条件： . | 零冗余，对硬盘友好 . | 不要同一个资源复制几份。 | Unity内置资源需要单独处理。 | 使用SBP。Built-in Pipeline有Bug，打包对Texture2D的引用时必然出现冗余。 | . | 低耦合，对内存友好 . | 加载A的时候，不要把不需要的B相关信息也加载进来。 | 释放Bundle的时候资源不会相互掣肘。 | . | Bundle数量要少，对IO性能友好 . | 加载一个需要的资源时，能尽量少地加载新的Bundle。 | Bundle数量越多，内存占用越高，也更容易导致加载一个资源需要一口气加载一大堆Bundle的情况。 | . | . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E4%B8%80%E4%B8%AA%E7%A8%8D%E5%A4%8D%E6%9D%82%E7%9A%84%E5%86%97%E4%BD%99",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#一个稍复杂的冗余"
+  },"2": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "常见的零冗余打包方案",
+    "content": " ",
+    "url": "/_posts/2026-02-25-bundle.html#%E5%B8%B8%E8%A7%81%E7%9A%84%E9%9B%B6%E5%86%97%E4%BD%99%E6%89%93%E5%8C%85%E6%96%B9%E6%A1%88",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#常见的零冗余打包方案"
+  },"3": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "反向引用计数法",
+    "content": "我们将一个资源被哪些资源引用的列表称之为这个资源的反向引用列表。 . 如上图，role.png的反向引用为 . | 1 . | [A.prefab, B.prefab] . | . 几乎所有打包方案都会获取资源的反向引用： . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 . | /// &lt;summary&gt; /// 获取全量反向引用 /// &lt;/summary&gt; /// &lt;param name=\"assetSet\"&gt;全量资源的信息集合&lt;/param&gt; /// &lt;returns&gt;&lt;/returns&gt; public static void GenerateInvertReference(Dictionary&lt;string, CompactFileBundleInfo&gt; assetSet) { foreach (var asset in assetSet.Keys) { string[] dependencies = AssetDatabase.GetDependencies(asset， true/false); foreach (var dependencyPath in dependencies) { // 不需要的文件不处理，例如.cs文件通常不算进去 if (!IsNeededAsset(dependencyPath)) continue; // GetDependencies返回的列表里包含资源本身，需要过滤 if (dependencyPath == asset) continue; // 记录反向引用，只记录这个资源被哪些资源引用了 assetSet[dependencyPath].InvertReferences.Add(asset); } } } . | . 反向引用计数法的基本原理是，计算出资源的反向引用数（不需要记录具体被哪些资源引用，只需要记录反向引用的数量），将反向引用数大于1的资源各自单独打包。 . 如上图，由于role.png的反向引用数为2，大于1，所以role.png将会被单独打包。 . 这种打包方案可以保证零冗余，但是也有一些别的问题： . 如上图，当role1.png，role2.png，role3.png都被A和B引用时，按照上述方案，这三张贴图会被各自打进一个bundle里。最终的bundle数为5。这并不是很好的方案，只为了加载一个预制件A，需要加载4个bundle。实际上很容易看出，这三张贴图打进同一个bundle里会更好。 . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E5%8F%8D%E5%90%91%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0%E6%B3%95",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#反向引用计数法"
+  },"4": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "自定义规则法",
+    "content": "在面对Bundle数过多问题时，追加特殊规则来约束Bundle的数量是一个很常见的方法， . | 例如可以设定一个这样的规则，当打包面对上面的问题时，如果role1.png，role2.png，role3.png在同一个文件夹，那么将它们打入同一个bundle。也就是根据资源所在的文件夹将次级引用的资源整合打包。 . | 者根据项目情况，约定某些文件夹内的资源必定按照文件夹整合打包，将特定目录及子目录中的资源根据文件夹进行分包。 . | 或约定某些类型的文件会被打入同一个Bundle。例如将lua文件打入同一个bundle，将shader打入同一个bundle，都是非常常见的做法。 . | 还有一些根据项目情况处理的更复杂的自定义规则，例如将Spine相关的文件全部打入同一个Bundle，通过规则规避上面提到的spine引用问题。 . | . 自定义规则法可以配合其他的零冗余打包算法一起使用，该方法往往需要对打包出来的资源进行人工分析后，由于该方法根据具体项目具体分析，具体规则往往五花八门。 . 值得注意的是，如果不谨慎考虑规则的合理性和实现方法的话，自定义规则可能会引入一些额外的问题。例如笔者就见过一些自定义规则导致了打出的bundle之间有环引用，进一步导致引用关系混乱的问题。 . Bundle之间总是不应该出现环引用，因为这说明这几个bundle总是需要一起加载，那么它们其实应该打成同一个bundle才对。如果出现了环引用，那么需要考虑一下分包规则是不是有什么问题。 . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E8%87%AA%E5%AE%9A%E4%B9%89%E8%A7%84%E5%88%99%E6%B3%95",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#自定义规则法"
+  },"5": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "反向查找法",
+    "content": "首先计算并储存每个资源的直接反向引用。 . 直接反向引用是什么？ . | 上面计算反向引用的算法中使用AssetDatabase.GetDependencies(asset)递归获取了资源的所有引用，然后让这些引用记录自己为反向引用。使用AssetDatabase.GetDependencies(asset, false)非递归地进行计算的话，得到的就是直接反向引用。 . | 和反向引用计数法不同，反向查找法需要使用直接反向引用，具体原因将在下文讲解。 . | . 算法通过以下规则进行递归查找： . 每个资源查找自己的直接反向引用的Bundle名 . | 如果没有反向引用，使用自己的路径作为Bundle名。 . | 当该资源所有的直接反向引用Bundle名相同时，自己也使用该Bundle名；否则使用自己的路径作为Bundle名。 . | . 最后可得每个资源应当被分配到哪个Bundle的信息。Bundle名可以在最后替换成哈希值。用这种方式处理环引用的对象时可能需要一些技巧。 . 理想情况下，这些文件的反向引用看起来是这样的： . 图中虚线代表反向引用。 . 注意，这里讲解的是理想情况下，实际情况下并非如此。我们将在之后讨论实际的情况。 . 下面提到的包名不是最终的包名，只是一个例子。实际上可以将前面的点号替换为_之类的符号，最终换成哈希值。 . | A和B两个预制件没有反向引用，根据规则1，直接使用自己的路径作为Bundle名【A.prefab.bundle, B.prefab.bundle】； . | role_SkeletonData.asset有两个直接反向引用，也就是A和B。由于A和B的Bundle名不同，根据规则2，使用自己的路径作为Bundle名【role_SkeletonData.asset.bundle】 . | role.skel.bytes和role_Atlas.asset的直接反向引用是role_SkeletonData.asset，所以它们所有的直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它们也使用这个bundle名。 . | role.atlas.txt和role_Material.mat的直接反向引用是role_Atlas.asset，由于role_Atlas.asset的bundle名是【role_SkeletonData.asset.bundle】，所以这两个文件的所有的直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它们也使用这个bundle名。 . | role.png的直接反向引用是role_Material.mat，所以它的所有直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它也使用这个bundle名。 . | . 最终分包会得到三个Bundle： . 算法如下： . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 . | /// &lt;summary&gt; /// 计算资源所在Bundle的名字 /// &lt;/summary&gt; /// &lt;param name=\"asset\"&gt;计算这个资源所在Bundle的名字&lt;/param&gt; /// &lt;param name=\"allAssetsDict\"&gt;所有资源的记录，其中包含资源的直接反向引用&lt;/param&gt; public static string GetAssetBundleName(CompactFileBundleInfo asset, Dictionary&lt;string, CompactFileBundleInfo&gt; allAssetsDict) { if (asset.BundleName != null) { return asset.BundleName; } // 先根据文件名生成一次Bundle名防止无限循环 asset.BundleName = asset.FullPath; string tempBundleName = null; foreach (var iref in asset.InvertReferences) { var refAsset = allAssetsDict[iref]; var refBoundleName = GetAssetBundleName(refAsset, allAssetsDict); if (tempBundleName == null) { tempBundleName = refBoundleName; } if (tempBundleName != refBoundleName) { asset.BundleName = asset.FullPath; return asset.BundleName; } } if (tempBundleName != null) { asset.BundleName = tempBundleName; } return asset.BundleName; } . | . 现实总是不够理想的情况…… . 刚才提到的理想情况下的反向引用是这样的： . 但实际情况是这样的： . 预制件实际上是直接持有材质的引用的。所以该打包方案并不会如预期一般打出三个bundle，而会将材质和贴图单独打包，打出4个bundle。 . 还有一些情况 . 对于传统的反向查找法，面对刚才提到过的这种情况，三张贴图也会被分别打进3个Bundle里。 . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E5%8F%8D%E5%90%91%E6%9F%A5%E6%89%BE%E6%B3%95",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#反向查找法"
+  },"6": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "反向查找法的增强",
+    "content": "对于上面的问题，可以通过完善反向查找法的逻辑来解决。这种方法在继承直接反向引用的包名时，保留了更多的信息。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 . | /// &lt;summary&gt; /// 计算资源的递归反向引用集 /// &lt;/summary&gt; /// &lt;param name=\"asset\"&gt;计算这个资源的递归反向引用集&lt;/param&gt; /// &lt;param name=\"allAssetsDict\"&gt;所有资源的记录，其中包含资源的直接反向引用&lt;/param&gt; public static SortedSet&lt;string&gt; GetAssetBundleName(CompactFileBundleInfo asset, Dictionary&lt;string, CompactFileBundleInfo&gt; allAssetsDict) { if (asset.BundleNameDict.Count &gt; 0) { return asset.BundleNameDict; } // 先生成一次防止无限循环 asset.BundleNameDict.Add(asset.RefreshDirectAssetsBundleName()); foreach (var iref in asset.InvertReferences) { var refAsset = allAssetsDict[iref]; var refBoundleName = GetAssetBundleName(refAsset, allAssetsDict); if(asset.BundleNameDict.Count == 1 &amp;&amp; asset.BundleNameDict.Contains(asset.BundleName)) { asset.BundleNameDict.Clear(); } foreach (var i in refBoundleName) { asset.BundleNameDict.Add(i); } } return asset.BundleNameDict; } . | . 通过继承所有的直接反向引用，来保留所有的引用信息。 . | 1 2 3 4 5 6 . | foreach (var asset in allAssetsDict.Values) { var hashSet = GetAssetBundleName(asset, allAssetsDict); // SortedSet&lt;string&gt;遍历时，字符串是排序后的 asset.BundleName = string.Join(\"&amp;\", hashSet); } . | . 最后，将直接反向引用名集合排序后连接起来作为Bundle名。 . 由于保留了更多反向引用信息，算法可以得知：虽然两个直接反向引用被打入了不同的Bundle，但role1.png、role2.png、role3.png的直接反向引用是相同的，所以也会被打入同一个Bundle。遂解决了上面提到的情况。 . 但即使是加强的反向查找法，也无法解决Spine打包中提到的问题。 . 材质文件的直接反向引用列表为[A.prefab, B.prefab, role_Atlas.asset]，依旧无法与其他Spine文件打入同一个Bundle。 . 还有一些情况 . 类似的，对于这种情况：C的直接反向引用为[A.prefab, D.prefab]，D的直接反向引用为[B.prefab, C.prefab]，所以C和D也无法打入同一个bundle。 . 那么有没有一种更加完善的打包方案，能在不进行特殊处理的情况下解决这个问题？ . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E5%8F%8D%E5%90%91%E6%9F%A5%E6%89%BE%E6%B3%95%E7%9A%84%E5%A2%9E%E5%BC%BA",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#反向查找法的增强"
+  },"7": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "资源的分级：一级资源和依赖资源",
+    "content": "想要使用更完善的资源打包方案，必须有更完善的资源管理方式。这里，我们定义一级资源和依赖资源的概念： . 凡是通过代码显式加载的资源都属于一级资源。这些资源往往是有明确的使用途径的。 . 其他被一级资源引用的资源也会被打入Bundle里，这些资源被称为依赖资源。 . 一级资源通常有哪些？ . | 各种预制件 . | UI界面预制件 | UI组件 | 角色/敌人/物体 | 地图元素 | . | 动态加载的文本/序列化文件 . | 代码文件 | 自定义序列化文件 . | json/xml/bytes/… | . | 自定义配置文件 | . | 动态加载的贴图 . | 头像/头像框/装饰 | 技能图标/Item图标 | 角色头像/立绘/半身绘 | 动态背景图/动态UI元素 | 图集 | …… | . | 动态加载的材质 | 动态加载的网格/动画数据 . | 任何可能需要直接加载的资源 | . 管理一级资源时，应当对资源进行人工分类，放入相应的、有明确管理标准的文件夹。任何一个一级资源的文件夹都应该能明确其中的资源是什么用途的，命名时也应该能结合内容一眼看出这些资源的用途。 如： . | 存放头像的文件夹 | 存放立绘的文件夹 | 存放技能图标的文件夹 | 存放UI页面的文件夹 | 存放浮窗的文件夹 | 存放角色预制件的文件夹 | …… | . 图中展示了一种一级资源管理方式，按照业务逻辑进行分类，按照$符号文件夹名管理。每个业务逻辑可以拥有自己的资源文件夹，其中存放了该业务逻辑使用的UI界面、浮窗预制件和lua代码文件。如果需要的话，还可以有其他的文件。UI预制件所引用的贴图、动画、材质或其它资源不会放在这里，而是放在美术/策划用于堆放素材的另一个不被$符号标记的文件夹。这些资源将在打包时被自动囊括进来，并按照规则分入适当的Bundle。 . 不容易分类的页面/浮窗可以统一放在一个文件夹里。 . 也可以选择将同类的资源也可以统一放在同一个文件夹中，如将所有UI预制件放在同一个文件夹里，将代码文件放在另一个文件夹。虽然对于分包算法来说不会有太大区别，但这会让开发人员在开发和维护业务逻辑时，在寻找想要的文件这件事上浪费一些时间。 . 部分特殊的一级资源可以用自定义规则法单独处理，如lua或shader文件可以在一个统一的流程中进行搜集，在搜集其他的资源时忽略。或将角色与其技能特效的大量预制件放入特定命名的文件夹内，使其打入同一个bundle（因为这些预制件往往都是同时加载和卸载的）。 . 通过一级资源向下递归检索来获取游戏中需要使用的所有资源。凡不是一级资源的，都是依赖资源，应该放在一级资源文件夹之外的地方，避免扰乱检索。可以新建相应的文件夹进行管理。 . 依赖资源的文件管理不需要那么严格，只要不会干扰一级资源，打包系统不在乎它在哪里。但为了开发中的方便，依赖资源也应该按照一定规则进行存放。依赖资源的存放规则以美术/策划人员方便为准。 . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E8%B5%84%E6%BA%90%E7%9A%84%E5%88%86%E7%BA%A7%E4%B8%80%E7%BA%A7%E8%B5%84%E6%BA%90%E5%92%8C%E4%BE%9D%E8%B5%96%E8%B5%84%E6%BA%90",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#资源的分级一级资源和依赖资源"
+  },"8": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "引用交集法",
+    "content": "有了合理的资源管理方案，就可以有更完善的资源打包方案。 . 接下来介绍引用交集法。依旧以该分包图为例： . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 . | [MenuItem(\"Tools/BuildBundleCompact\")] public static void Build() { CompactBundleBuilderTools.ClearBuildPath(); AssetDatabase.Refresh(); // 生成所有要打入bundle的资源，以及这个资源需要打入哪个Bundle的信息 var allAssetsDict = GetCompactFileBundleInfoDict(); // 生成每个bundle的信息 var bundleInfoDict = GetAllAssetBundlesInfo(allAssetsDict); // 保存log CompactBundleBuilderTools.SaveBundleInfoToJson(bundleInfoDict); Debug.Log($\"Start Build AssetBundles. AssetBundles Count : {bundleInfoDict.Count}, Build Target : {BundleBuildTarget}\"); BuildAssetbundles(bundleInfoDict); Debug.Log($\"Build Success! AssetBundles build to path : {BundlePath}\"); } . | . 和其他分包算法类似，该算法也需要获取所有需要打入Bundle的资源，并计算出它们应当被分配到哪个Bundle里。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 . | public static Dictionary&lt;string, CompactFileBundleInfo&gt; GetCompactFileBundleInfoDict() { // 获取一级资源 var directAssetDict = CompactBundleBuilderTools.GetAllDirectAssetsInfoDict(); foreach (var asset in directAssetDict.Values) { // 每个一级资源生成自己的BundleName asset.RefreshDirectAssetsBundleName(); } // 获取依赖资源 var dependenciesAssets = GetDependenciesInfo(directAssetDict); foreach (var asset in dependenciesAssets.Values) { // 每个依赖资源根据自己被引用的情况，决定自己应该在哪个bundle里 asset.RefreshBundleNameByInvertDirectAssetReferences(); } // 将一级资源和资源资源合并处理 // 因为依赖资源的内容通常比较多，所以把一级资源归入依赖资源的容器处理 Dictionary&lt;string, CompactFileBundleInfo&gt; allAssetsDict = dependenciesAssets; foreach (var directAssets in directAssetDict) { allAssetsDict.Add(directAssets.Key, directAssets.Value); } return allAssetsDict; } . | . 首先根据目录规则获取所有一级资源，如获取某个路径下的所有资源，或获取所有$符号开头的文件夹内的资源。然后给一级资源分配Bundle。 . 下文假设所有一级资源单独打包，即每个一级资源都会单独打进一个Bundle。当然，即使部分文件夹下的一级资源需要合并打包，也是容易处理的，算法的基本思想一样，这里不再赘述。 . 分配Bundle时，首先使用一级资源的名字作为Bundle名（之后可以使用哈希值，或者其他命名分配方式修改包名，此处不再赘述）。 . 为描述简洁，这里不使用资源的全路径名，而是只使用资源名。实际处理的时候，如果不能保证文件不重名，需要使用全路径名。如果能够保证文件不重名，则可以使用资源名（带后缀）。 . |   |   |   | . | 文件路径 | 一级引用信息 | Bundle名 | . | A.prefab | 无 | A_prefab.ab | . | B.prefab | 无 | B_prefab.ab | . | C.prefab | 无 | C_prefab.ab | . 这样，所有一级资源应该打入的Bundle就计算完毕了。之后通过查找引用，找到所有二级资源。 . |   |   |   | . | 文件路径 | 一级引用信息 | Bundle名 | . | role_SkeletonData.asset |   |   | . | role.skel.bytes |   |   | . | role_Atlas.asset |   |   | . | role.atlas.txt |   |   | . | role_Material.mat |   |   | . | role.png |   |   | . | role2_SkeletonData.asset |   |   | . | role2.skel.bytes |   |   | . | role2_Atlas.asset |   |   | . | role2.atlas.txt |   |   | . | role2_Material.mat |   |   | . | role2.png |   |   | . 接下来需要为这些文件分配相应的Bundle名。首先生成每个文件的一级反向引用信息。即生成反向引用的时候，只关注哪些一级资源引用了自己，不关注其他资源的引用情况。 . |   |   |   | . | 文件路径 | 一级引用信息 | Bundle名 | . | role_SkeletonData.asset | A.prefab, B.prefab |   | . | role.skel.bytes | A.prefab, B.prefab |   | . | role_Atlas.asset | A.prefab, B.prefab |   | . | role.atlas.txt | A.prefab, B.prefab |   | . | role_Material.mat | A.prefab, B.prefab |   | . | role.png | A.prefab, B.prefab |   | . | role2_SkeletonData.asset | C.prefab |   | . | role2.skel.bytes | C.prefab |   | . | role2_Atlas.asset | C.prefab |   | . | role2.atlas.txt | C.prefab |   | . | role2_Material.mat | C.prefab |   | . | role2.png | C.prefab |   | . 之后，根据不同的一级引用信息，为文件生成Bundle名。 . |   |   |   | . | 文件路径 | 一级引用信息 | Bundle名 | . | role_SkeletonData.asset | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.skel.bytes | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role_Atlas.asset | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.atlas.txt | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role_Material.mat | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.png | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role2_SkeletonData.asset | C.prefab | C_prefab.ab | . | role2.skel.bytes | C.prefab | C_prefab.ab | . | role2_Atlas.asset | C.prefab | C_prefab.ab | . | role2.atlas.txt | C.prefab | C_prefab.ab | . | role2_Material.mat | C.prefab | C_prefab.ab | . | role2.png | C.prefab | C_prefab.ab | . 通过简单的字符串拼接，就可以将资源正确分配到所在的Bundle。可以注意到，role2的Spine动画由于只被C.prefab引用，按照目前的命名规则，会和C.prefab放到同一个Bundle里。而role的Spine动画由于被两个一级引用持有，会创建一个名为A_prefab__B_prefab.ab的新资源包。这样，程序就生成了本节开头的分包图。 . 将一级引用和二级引用的表结合起来，可以得到最终的分包策略表： . |   |   |   | . | 文件路径 | 一级引用信息 | Bundle名 | . | A.prefab | 无 | A_prefab.ab | . | B.prefab | 无 | B_prefab.ab | . | C.prefab | 无 | C_prefab.ab | . | role_SkeletonData.asset | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.skel.bytes | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role_Atlas.asset | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.atlas.txt | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role_Material.mat | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role.png | A.prefab, B.prefab | A_prefab__B_prefab.ab | . | role2_SkeletonData.asset | C.prefab | C_prefab.ab | . | role2.skel.bytes | C.prefab | C_prefab.ab | . | role2_Atlas.asset | C.prefab | C_prefab.ab | . | role2.atlas.txt | C.prefab | C_prefab.ab | . | role2_Material.mat | C.prefab | C_prefab.ab | . | role2.png | C.prefab | C_prefab.ab | . 将Bundle置于表头： . |   |   | . | Bundle名 | 包含文件 | . | A_prefab.ab | A.prefab | . | B_prefab.ab | B.prefab | . | A_prefab__B_prefab.ab | role_SkeletonData.asset | . |   | role.skel.bytes | . |   | role_Atlas.asset | . |   | role.atlas.txt | . |   | role_Material.mat | . |   | role.png | . | C_prefab.ab | C.prefab | . |   | role2_SkeletonData.asset | . |   | role2.skel.bytes | . |   | role2_Atlas.asset | . |   | role2.atlas.txt | . |   | role2_Material.mat | . |   | role2.png | . 按照该表打包即可。 . 对于刚才提到的这个问题：C的一级引用为[A.prefab, B.prefab]，D的一级引用为[A.prefab, B.prefab]，所以C和D会被打进同一个bundle，不会出现环引用。 . 该算法可以基于反向查找法进行优化来实现（代码会比较短，处理环引用的时候需要一些技巧），或是直接按照上面描述的顺序来实现（更简单直接，实现会长一些），这里不提供具体代码。 . ",
+    "url": "/_posts/2026-02-25-bundle.html#%E5%BC%95%E7%94%A8%E4%BA%A4%E9%9B%86%E6%B3%95",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html#引用交集法"
+  },"9": {
+    "doc": "如何构建零冗余又内存友好的资源打包方案？",
+    "title": "如何构建零冗余又内存友好的资源打包方案？",
+    "content": "本文会简单介绍下使用Unity的AssetBundle进行打包时可能遇到的一些问题，之后列出几个常见的分包算法并分析其利弊，最后给出一个可以解决前述算法中提到的问题的分包算法。 只是一些笔者处理资源打包相关问题时的研究结果，用于优化资源的打包方案。自认为可以用于大多数的情况，但未必适用于所有情况。有疑问或更好的解决方案的话欢迎讨论交流。 . ",
+    "url": "/_posts/2026-02-25-bundle.html",
+    
+    "relUrl": "/_posts/2026-02-25-bundle.html"
+  },"10": {
+    "doc": "C#实现的Rotated IoU算法",
+    "title": "基本原理",
+    "content": "该算法通过构造两个OBB交叠区域的多边形，来计算该多边形的面积。 示例图中用填充白色表示两个矩形OBB；用红色Gizmos线围成交叠多边形；用红色Gizmos小球表示交叠多边形的顶点。小球的大小代表顶点的顺序，最小的是第一个顶点，最大的是最后一个顶点。 . | 计算交叠多边形的顶点 . | 任一OBB的一个顶点如果进入了另一个OBB的内部，那么这个顶点是交叠多边形的一个顶点。 | 任一OBB的一条边如果和另一个OBB的任意条边有交点，那么这些交点是交叠多边形的一个顶点。 | . | 对多边形顶点进行排序，以构成多边形 . | 计算该多边形的几何中心。 | 围绕几何中心，对多边形的顶点进行归一化。 | 对归一化的向量按照顺时针排序（逆时针也行），归一化后的向量坐落在球面上，根据y轴正负，按照x轴的向量值进行排序即可。 | . | 计算该多边形的面积 . | 计算构成该多边形的三角形面积的和即可。 | 由于该图形必为凸多边形，选择第一个节点，并顺序两两遍历其他节点，即可得到构成该多边形的三角形。如下图的多边形由三个三角形构成。 | . | . ",
+    "url": "/_posts/2026-03-09-IoU.html#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86",
+    
+    "relUrl": "/_posts/2026-03-09-IoU.html#基本原理"
+  },"11": {
+    "doc": "C#实现的Rotated IoU算法",
+    "title": "代码",
+    "content": "| 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 334 335 336 337 338 339 340 341 342 343 344 345 346 347 348 349 . | using System.Collections.Generic; using UnityEngine; using System; public static class CalculateRotateIoU { /// &lt;summary&gt; /// 一个OBB的基本数据 /// &lt;/summary&gt; public struct OBBData { public Vector2 Position; public Vector2 Size; public float Angle; public float Area { get { return Size.x * Size.y; } } public void DebugPrint() { Debug.Log($\"Position: {Position}, Size: {Size}, Angle: {Angle}\"); } } /// &lt;summary&gt; /// 记录一个OBB顺时针方向的角点 /// &lt;/summary&gt; struct BoxCornerPoints { public float X0, Y0, X1, Y1, X2, Y2, X3, Y3; public float this[int index] { get { switch (index) { case 0: return this.X0; case 1: return this.Y0; case 2: return this.X1; case 3: return this.Y1; case 4: return this.X2; case 5: return this.Y2; case 6: return this.X3; case 7: return this.Y3; default: throw new IndexOutOfRangeException(\"Invalid BoxCornerPoints index!\"); } } set { switch (index) { case 0: this.X0 = value; break; case 1: this.Y0 = value; break; case 2: this.X1 = value; break; case 3: this.Y1 = value; break; case 4: this.X2 = value; break; case 5: this.Y2 = value; break; case 6: this.X3 = value; break; case 7: this.Y3 = value; break; default: throw new IndexOutOfRangeException(\"Invalid BoxCornerPoints index!\"); } } } } // 保存交叠区域的角点 public static List&lt;Vector2&gt; Points = new List&lt;Vector2&gt;(8); // 保存交叠区域的中点 static Vector2 UnionCenter = Vector2.zero; /// &lt;summary&gt; /// 将obb数据转化为角点 /// &lt;/summary&gt; /// &lt;returns&gt;角点数据&lt;/returns&gt; static BoxCornerPoints Box2Corners(OBBData box1) { var x = box1.Position.x; var y = box1.Position.y; var width = box1.Size.x; var height = box1.Size.y; var cos = Mathf.Cos(box1.Angle); var sin = Mathf.Sin(box1.Angle); var halfWidth = width * 0.5f; var halfHeight = height * 0.5f; var cornersX = new Vector4(-halfWidth, -halfWidth, halfWidth, halfWidth); var cornersY = new Vector4(-halfHeight, halfHeight, halfHeight, -halfHeight); var corners = new BoxCornerPoints(); for (var i = 0; i &lt; 4; i++) { corners[2 * i] = cos * cornersX[i] + sin * cornersY[i] + x; corners[2 * i + 1] = -sin * cornersX[i] + cos * cornersY[i] + y; } return corners; } /// &lt;summary&gt; /// 判断一个点是否在OBB的内部 /// &lt;/summary&gt; static bool IsPointInQuad(Vector2 point, BoxCornerPoints corners) { var ab0 = corners[2] - corners[0]; var ab1 = corners[3] - corners[1]; var ad0 = corners[6] - corners[0]; var ad1 = corners[7] - corners[1]; var ap0 = point.x - corners[0]; var ap1 = point.y - corners[1]; var abab = ab0 * ab0 + ab1 * ab1; var abap = ab0 * ap0 + ab1 * ap1; var adad = ad0 * ad0 + ad1 * ad1; var adap = ad0 * ap0 + ad1 * ap1; return abab &gt;= abap &amp;&amp; abap &gt;= 0 &amp;&amp; adad &gt;= adap &amp;&amp; adap &gt;= 0; } /// &lt;summary&gt; /// 计算线段的交点 /// &lt;/summary&gt; /// &lt;param name=\"pts1\"&gt;OBB1角点&lt;/param&gt; /// &lt;param name=\"pts2\"&gt;OBB2角点&lt;/param&gt; /// &lt;param name=\"i\"&gt;OBB1的第几条边&lt;/param&gt; /// &lt;param name=\"j\"&gt;OBB2的第几条边&lt;/param&gt; /// &lt;returns&gt;(是否有交点, 交点)&lt;/returns&gt; static (bool, Vector2) LineSegmentIntersection(BoxCornerPoints pts1, BoxCornerPoints pts2, int i, int j) { var A = Vector2.zero; var B = Vector2.zero; var C = Vector2.zero; var D = Vector2.zero; var ret = Vector2.zero; A[0] = pts1[2 * i]; A[1] = pts1[2 * i + 1]; B[0] = pts1[2 * ((i + 1) % 4)]; B[1] = pts1[2 * ((i + 1) % 4) + 1]; C[0] = pts2[2 * j]; C[1] = pts2[2 * j + 1]; D[0] = pts2[2 * ((j + 1) % 4)]; D[1] = pts2[2 * ((j + 1) % 4) + 1]; var BA0 = B[0] - A[0]; var BA1 = B[1] - A[1]; var DA0 = D[0] - A[0]; var CA0 = C[0] - A[0]; var DA1 = D[1] - A[1]; var CA1 = C[1] - A[1]; var acd = DA1 * CA0 &gt; CA1 * DA0; var bcd = (D[1] - B[1]) * (C[0] - B[0]) &gt; (C[1] - B[1]) * (D[0] - B[0]); if (acd != bcd) { var abc = CA1 * BA0 &gt; BA1 * CA0; var abd = DA1 * BA0 &gt; BA1 * DA0; if (abc != abd) { var DC0 = D[0] - C[0]; var DC1 = D[1] - C[1]; var ABBA = A[0] * B[1] - B[0] * A[1]; var CDDC = C[0] * D[1] - D[0] * C[1]; var DH = BA1 * DC0 - BA0 * DC1; var Dx = ABBA * DC0 - BA0 * CDDC; var Dy = ABBA * DC1 - BA1 * CDDC; ret[0] = Dx / DH; ret[1] = Dy / DH; return (true, ret); } } return (false, ret); } /// &lt;summary&gt; /// 将向量列表根据顺时针排序 /// &lt;/summary&gt; static void SortVertexInConvexPolygon(List&lt;Vector2&gt; points) { // 用来给点排序的算法，依据点到交叠区域中心的距离排序 void QuickSortForPoints(List&lt;Vector2&gt; pointList) { // 将向量列表归一化后，按照x轴排序 float GetNormalizedPointDistanceToCenter(Vector2 point) { var vx = point[0] - UnionCenter[0]; var vy = point[1] - UnionCenter[1]; var d = Mathf.Sqrt(vx * vx + vy * vy); // 需要归一化，似乎无法避免这个开根号 vx /= d; vy /= d; if (vy &lt; 0) { vx = -2 - vx; } return vx; } // 一个快速排序算法 void QuickSortForPointsInternal(List&lt;Vector2&gt; pointList, int left, int right) { if (left &lt; right) { int i = left; int j = right; var middle = pointList[(left + right) / 2]; while (true) { while (i &lt; right &amp;&amp; GetNormalizedPointDistanceToCenter(pointList[i]) &lt; GetNormalizedPointDistanceToCenter(middle)) { i++; }; while (j &gt; 0 &amp;&amp; GetNormalizedPointDistanceToCenter(pointList[j]) &gt; GetNormalizedPointDistanceToCenter(middle)) { j--; }; if (i == j) break; (pointList[i], pointList[j]) = (pointList[j], pointList[i]); if (pointList[i] == pointList[j]) j--; } QuickSortForPointsInternal(pointList, left, i); QuickSortForPointsInternal(pointList, i + 1, right); } } QuickSortForPointsInternal(pointList, 0, pointList.Count - 1); } if (points.Count &lt;= 0) { return; } UnionCenter = Vector2.zero; for (int i = 0; i &lt; points.Count; i++) { UnionCenter[0] += points[i][0]; UnionCenter[1] += points[i][1]; } UnionCenter[0] /= points.Count; UnionCenter[1] /= points.Count; QuickSortForPoints(points); } /// &lt;summary&gt; /// 将多边形转化为多个三角形面积之和 /// &lt;/summary&gt; /// &lt;param name=\"points\"&gt;输入多边形的顶点&lt;/param&gt; /// &lt;returns&gt;多边形的面积&lt;/returns&gt; static float Area(List&lt;Vector2&gt; points) { float TrangleArea(Vector2 a, Vector2 b, Vector2 c) { return ((a[0] - c[0]) * (b[1] - c[1]) - (a[1] - c[1]) * (b[0] - c[0])) * 0.5f; } var areaValue = 0f; for (int i = 0; i &lt; points.Count - 2; i++) { areaValue += Mathf.Abs(TrangleArea(points[0], points[i + 1], points[i + 2])); } return areaValue; } /// &lt;summary&gt; /// 计算两个OBB的交叠面积 /// &lt;/summary&gt; public static float IoU(OBBData box1, OBBData box2) { // 初始化缓存，这个列表长度最多为8，已初始化为长度8 Points.Clear(); // 转化成角点 var corners1 = Box2Corners(box1); var corners2 = Box2Corners(box2); // 如果OBB1的一个点在OBB2中，那么它肯定是一个构成交叠区域的角点 for (var i = 0; i &lt; 4; i++) { var point = new Vector2(corners1[2 * i], corners1[2 * i + 1]); if (IsPointInQuad(point, corners2)) { Points.Add(point); } } // 如果OBB2的一个点在OBB1中，那么它肯定是一个构成交叠区域的角点 for (var i = 0; i &lt; 4; i++) { var point = new Vector2(corners2[2 * i], corners2[2 * i + 1]); if (IsPointInQuad(point, corners1)) { Points.Add(point); } } // 计算OBB1和OBB2的线段交点 for (var i = 0; i &lt; 4; i++) { for (int j = 0; j &lt; 4; j++) { var (ret, point) = LineSegmentIntersection(corners1, corners2, i, j); if (ret) { Points.Add(point); } } } // 排序交叠区域的顶点后计算面积 SortVertexInConvexPolygon(Points); var result = Area(Points); return result; } } . | . ",
+    "url": "/_posts/2026-03-09-IoU.html#%E4%BB%A3%E7%A0%81",
+    
+    "relUrl": "/_posts/2026-03-09-IoU.html#代码"
+  },"12": {
+    "doc": "C#实现的Rotated IoU算法",
+    "title": "C#实现的Rotated IoU算法",
+    "content": "实际使用中遇到了需要计算两个OBB（Oriented Bounding Box）交叠面积的需求，查找资料发现了相关算法： . Rotated IoU 计算 . 将其用C#实现并学习了实现方法。代码放在文章最后。 . ",
+    "url": "/_posts/2026-03-09-IoU.html",
+    
+    "relUrl": "/_posts/2026-03-09-IoU.html"
+  },"13": {
+    "doc": "粒子池的实现",
+    "title": "看看官方是怎么说的？",
+    "content": "Unity官方也注意到了这个问题，并描述了一种可能的“建议”： . 粒子系统池 . 对粒子系统建池时，请注意它们至少消耗 3500 字节的内存。内存消耗根据粒子系统上激活的模块数量而增加。停用粒子系统时不会释放此内存；只有销毁粒子系统时才会释放。 . 从 Unity 5.3 开始，大多数粒子系统设置都可在运行时进行操作。对于必须汇集大量不同粒子效果的项目，将粒子系统的配置参数提取到数据载体类或结构中可能更有效。 . 需要某种粒子效果时，“通用”粒子效果池即可提供必需的粒子效果对象。然后，可将配置数据应用于对象以实现期望的图形效果。 . 这种方案比尝试汇集给定场景中使用的粒子系统的所有可能变体和配置会更具内存使用效率，但需要大量的工程努力才能实现。 . 官方给出的方案就只有这几行描述，距离具体实现还差得多。搜索可以发现已经有人按照这个思路初步实现了一个版本： . https://github.com/CoolOverflow/UnityParticleSystemMemoryOptimization . 这个仓库里实现了基本的粒子池功能，将粒子参数记录在一个结构体中。这个结构体实际运行中占用内存约4KB+，相比原本的尺寸已经低了很多了。不过该项目完成度不高，使用起来还是颇为不便，也遗留了许多问题。本文基于这个思路，提供一个更加完善的，实际使用起来更为方便的实现。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E7%9C%8B%E7%9C%8B%E5%AE%98%E6%96%B9%E6%98%AF%E6%80%8E%E4%B9%88%E8%AF%B4%E7%9A%84",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#看看官方是怎么说的"
+  },"14": {
+    "doc": "粒子池的实现",
+    "title": "我们想要一个什么样的粒子池？",
+    "content": " ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%88%91%E4%BB%AC%E6%83%B3%E8%A6%81%E4%B8%80%E4%B8%AA%E4%BB%80%E4%B9%88%E6%A0%B7%E7%9A%84%E7%B2%92%E5%AD%90%E6%B1%A0",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#我们想要一个什么样的粒子池"
+  },"15": {
+    "doc": "粒子池的实现",
+    "title": "池化粒子降低内存占用",
+    "content": "将原本的粒子在Disable的时候移动到池子里，Enable的时候重新附加回来。通过这种方式大幅降低同时存在的粒子数量来降低内存消耗。 . 这需要在原本的粒子系统游戏对象上挂载一个Dummy组件，来监听游戏对象的Enable/Disable。上面提到的开源仓库就是这么做的。 . 本文的方案是，在运行游戏中实例化游戏对象时，删除游戏对象上的ParticleSystem（和ParticleSystemRenderer），将被删除的粒子系统的数据记录下来。当这个游戏对象Enable时，从粒子池中获取一个仅挂载了粒子系统的游戏对象（这里称之为裸粒子），将这个游戏对象作为原本游戏对象的子物体。 . 粒子池可以在加载游戏时预加载几十甚至数百个裸粒子以供使用。除非同屏显示的粒子数量超过预加载的数量，否则游戏中不需要派生新的裸粒子。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%B1%A0%E5%8C%96%E7%B2%92%E5%AD%90%E9%99%8D%E4%BD%8E%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#池化粒子降低内存占用"
+  },"16": {
+    "doc": "粒子池的实现",
+    "title": "记录粒子参数",
+    "content": "由于从粒子池冲拿回的粒子参数可能和最初的不一样，所以需要记录一下粒子的参数，在拿到裸粒子后将参数赋值给它。这需要让Dummy组件记录粒子的原始参数信息。 . 有很多粒子系统的参数可能是一样的，例如同一种子弹发射了数十发，会有至少数十个粒子使用的是同一套参数。为了节约内存，我们希望这些粒子可以使用同一份参数。 . 当我们对一个游戏对象应用粒子池时，先通过FNV算法计算粒子系统的所有参数得到一个哈希值，用粒子参数管理器哈希表里保存粒子的参数，即可做到同类粒子共享同一份数据。记录参数的时候，Dummy组件需要先计算并记录粒子的哈希值，如果发现这个哈希值是新值，才将粒子参数保存到管理器的哈希表里。使用哈希算法可能出现哈希碰撞，不过概率极低，实际使用中还没有遇到过这种情况。而且这种问题如果发生会非常明显，让特效负责人稍微修改一下粒子参数中的小数位即可改变哈希值规避碰撞。 . 值得注意的是，Dummy是成可以被派生（Instantiate）的。也就是说，以一个已经应用了粒子池的游戏对象（已经删除了原本的粒子系统，并记录了粒子数据哈希值的游戏对象）作为母本进行派生，派生出的对象也应是可用的。由于我们的Dummy实际上只记录了一个参数的哈希值和少数其他的几个变量，这是很容易做到的。基于此，如果有频繁发射子弹之类的需求，可以将一个已经应用过粒子池，并Disable的子弹作为母本来进行派生。这样可以防止每次创建新的子弹都要重新应用一次粒子池。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E8%AE%B0%E5%BD%95%E7%B2%92%E5%AD%90%E5%8F%82%E6%95%B0",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#记录粒子参数"
+  },"17": {
+    "doc": "粒子池的实现",
+    "title": "尽量减少特效负责人在开发中的负担",
+    "content": "新增的工具不应降低开发效率，我们希望特效负责人在制作特效的时候能够一如既往，不要增加额外的工作。所以大多数工作需要在运行中进行。有两种方式： . | 在非运行时，我们可以通过手动给预制件根物体附加一个标记组件，来时期在运行时自动执行记录参数和删除粒子系统的工作。这要求我们对所有需要应用粒子池的预制件手动附加组件。 . | 在游戏中如对象池之类的固定用于派生预制件的接口中统一挂载粒子池标记组件并运行，这样就不需要手动修改预制件。不过这要求游戏本身对对象派生功能有比较统一的一个或数个接口，改造起来可能需要一定的时间。 . | . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E5%B0%BD%E9%87%8F%E5%87%8F%E5%B0%91%E7%89%B9%E6%95%88%E8%B4%9F%E8%B4%A3%E4%BA%BA%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E7%9A%84%E8%B4%9F%E6%8B%85",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#尽量减少特效负责人在开发中的负担"
+  },"18": {
+    "doc": "粒子池的实现",
+    "title": "需要注意的问题",
+    "content": "进行粒子池的开发前，有几个问题需要注意： . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E9%9C%80%E8%A6%81%E6%B3%A8%E6%84%8F%E7%9A%84%E9%97%AE%E9%A2%98",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#需要注意的问题"
+  },"19": {
+    "doc": "粒子池的实现",
+    "title": "看不见的 ParticleSystemRenderer",
+    "content": "当你给一个GameObject附加ParticleSystem时，Unity会同时给这个GameObject附加一个ParticleSystemRenderer组件。ParticleSystemRenderer也会占用一定的内存。这个组件在Inspector里是不可见的，哪怕打开Debug模式也看不到，所以很容易被忽视。ParticleSystemRenderer的参数可以直接在ParticleSystem的Renderer栏位进行配置，所以平时即使隐藏掉也不会有什么问题。但是如果在删除粒子的时候只调用了Destroy(ParticleSystem)，那么 ParticleSystemRenderer 是不会被删除的。 . 虽然ParticleSystemRenderer是不可见的，但是通过GetComponent还是可以获取到的，也可以通过Destroy进行删除。 . | 1 2 3 . | this.gameObject.AddComponent&lt;ParticleSystem&gt;(); // 给游戏对象附加粒子系统后，立刻就可以获取到ParticleSystemRenderer var particleSystemRenderer = this.gameObject.GetComponent&lt;ParticleSystemRenderer&gt;(); . | . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E7%9C%8B%E4%B8%8D%E8%A7%81%E7%9A%84-particlesystemrenderer",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#看不见的-particlesystemrenderer"
+  },"20": {
+    "doc": "粒子池的实现",
+    "title": "无法直接池化Component",
+    "content": "Component依附于GameObject，我们无法直接池化Component，只能池化GameObject。如果每次Enable的时候添加粒子系统，Disable的时候删除粒子系统，那样性能消耗会非常的高。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%97%A0%E6%B3%95%E7%9B%B4%E6%8E%A5%E6%B1%A0%E5%8C%96component",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#无法直接池化component"
+  },"21": {
+    "doc": "粒子池的实现",
+    "title": "无法在Enable和Disbale时SetParent",
+    "content": "在游戏对象Enable时给自己挂载一个子物体是做不到的，Unity不允许你这么做。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 . | public class ParticleSystemDummy : MonoBehaviour { ... // 其它代码 public void OnEnable() { // 获取池中的裸粒子 var particleNode = ParticleSystemPool.Instance.Get(); // 这是不行的！ particleNode.SetParent(this.transform); ... // 其它代码 } ... // 其它代码 } . | . 这会导致Unity报出一个错误： . Cannot set the parent of the GameObject ‘NakedParticle’ while activating or deactivating the parent GameObject. 不过，在Enable时给自己子物体挂载一个子物体是没问题的。也就是说我们要增加一层缓冲层游戏对象用于存放实际播放的粒子。 . 最终，粒子池看起来应该是这样的： . 编辑状态下的粒子和平时无异 运行时，原本的粒子被删除，下方挂载ParticleContent作为缓冲层，裸粒子应用了粒子的参数，被挂载在缓冲层的下面 当粒子被Disable时，裸粒子被移回粒子池等待复用 增加缓冲层也会性能有一定的影响，当同一帧同时Disable/Enable大量粒子的时候会因此导致一些额外消耗。不过目前没发现更好的做法，而且这些消耗本身并没有很高。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%97%A0%E6%B3%95%E5%9C%A8enable%E5%92%8Cdisbale%E6%97%B6setparent",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#无法在enable和disbale时setparent"
+  },"22": {
+    "doc": "粒子池的实现",
+    "title": "注意粒子系统间的引用关系",
+    "content": "粒子系统可以通过子发射器（Sub Emitters）引用其他粒子系统。由于原本的粒子会在初始化的时候被删除，这部分的引用关系需要单独处理。可以在记录粒子数据时，将引用关系记录在Dummy中。虽然理论上可行，由于我在实际需求中并没有遇到很多这样的情况，所以没有进行支持。想要支持也并不困难。 . 粒子系统间的引用关系 ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%B3%A8%E6%84%8F%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F%E9%97%B4%E7%9A%84%E5%BC%95%E7%94%A8%E5%85%B3%E7%B3%BB",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#注意粒子系统间的引用关系"
+  },"23": {
+    "doc": "粒子池的实现",
+    "title": "勾选了Prewarm的粒子启动耗时很久",
+    "content": "即使不进行池化，勾选了Prewarm的粒子在Enable的时候也会非常耗时。这本身就是一个只有在真正需要的时候才会勾选的高消耗选项。粒子池不能支持池化这样的粒子，否则会出现严重的性能问题。不过大多数情况下，这个选项都是不需要勾选的。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E5%8B%BE%E9%80%89%E4%BA%86prewarm%E7%9A%84%E7%B2%92%E5%AD%90%E5%90%AF%E5%8A%A8%E8%80%97%E6%97%B6%E5%BE%88%E4%B9%85",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#勾选了prewarm的粒子启动耗时很久"
+  },"24": {
+    "doc": "粒子池的实现",
+    "title": "注意粒子的scalingMode",
+    "content": "如果粒子的scalingMode为Local的话，其缩放只会应用裸粒子本身的缩放，与父物体无关。所以在记录粒子数据的时候，还需要记录Transform中的缩放数据，在scalingMode为Local时，需要应用这个数据。 . 理论上simulationSpace参数设置为World时也需要特殊处理，但我这边没有这种粒子，所以这里没有进行处理。需要处理的话将position之类的位置也进行记录即可。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%B3%A8%E6%84%8F%E7%B2%92%E5%AD%90%E7%9A%84scalingmode",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#注意粒子的scalingmode"
+  },"25": {
+    "doc": "粒子池的实现",
+    "title": "注意直接引用粒子的情况",
+    "content": "对于Animator直接控制粒子上的参数的情况需要多加注意。由于实际运行中，原本的粒子在记录完数据后已经被删除了，Animator将无法正常控制粒子的参数。可以考虑新增一个Agent对象将需要操控的粒子参数暴露出来，把Agent挂在粒子系统的游戏对象上，在Animator中控制Agent对象上的参数作为替代，由Agent代理操作粒子参数。由于我这边并没有很多这样的需求，所以选择直接不对这样的粒子进行池化。 . 其他地方也偶尔会有需要直接引用粒子的情况，这种情况需要基于粒子池进行专门的改造。不同项目的处理方式不同，无法统一，只能具体问题具体分析。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E6%B3%A8%E6%84%8F%E7%9B%B4%E6%8E%A5%E5%BC%95%E7%94%A8%E7%B2%92%E5%AD%90%E7%9A%84%E6%83%85%E5%86%B5",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#注意直接引用粒子的情况"
+  },"26": {
+    "doc": "粒子池的实现",
+    "title": "应用粒子系统的耗时",
+    "content": "记录粒子系统通常可以在预加载之类的场景进行，对性能要求相对没有那么严苛。但是游戏中的粒子系统随时都有可能Enable/Disable，所以将记录的粒子参数应用到裸粒子上的性能消耗值得关注。 . 由于一帧Enable的粒子数量不同，粒子参数复杂度不同，应用粒子的耗时会有很多变化。 . 对于本文的实现，在实际项目的测试中得出了一些经验数据。测试中每帧同时Enable的粒子偶尔可能达到100个，多数情况是几十个。这已经不少了。 . 一些低端安卓设备上，应用数量较多的粒子偶尔会需要数毫秒的耗时。虽然大多数时候消耗都在1ms以下，但是偶尔的耗时增加依旧是值得关注的，可能会影响帧率。中高端设备基本都可以在1ms以下。 . 对于iOS系统，哪怕是一些比较旧的设备也基本可以稳定在1ms以下。iOS往往是内存导致闪退的重灾区，对性能有担忧又想要优化内存的话，可以考虑仅在编辑器和内存较少的iOS系统中启用该功能来节约内存。 . 通过【共享节点链表】实现的LRU数据结构来降低裸粒子的取用代价 . 从粒子池中获取裸粒子时，这个裸粒子可能已经被使用过一次了。如果取用的裸粒子上的参数恰好是我们需要的，那就不需要再耗时去应用这些参数了。这种情况实际上十分常见，特别是当池子足够大，或部分特效在短时间内反复播放的时候。对于这种情况，我们可以直接把粒子放到原对象下进行重播，不再需要专门设置粒子的参数。如果实际使用中可以优先取用粒子池中我们需要的粒子的话，可以节约很多应用粒子参数的耗时。 . 常见的对象池通常是一个队列结构，先进先出。每次取用对象时，从队列头部拿取一个对象。当对象需要回收时，则将其加入队列尾。 . 可以看到，池子里已经有一个对象A了，但取出的对象却是D，以至于取用方不得不重新应用参数，将D转换为A来使用。如果我们能从池子中取出一个本来已经是A的对象，就不需要再重新应用参数了。但如果池子里已经有很多的对象了，最近使用过的粒子就不会很快被再次使用。常规的对象池由于总是取用最老的对象，不会取用最近使用过的粒子。 为了提高已经用过的同类粒子命中率，不能再使用常规的队列结构了。 . 我们需要一种方法，能够从池子中取出需要的对象，而不总是最老的对象。只有池子中没有需要的对象时，才取用最老的对象。实际上，这就是LRU算法。 . 那么有没有一种方法，可以在保证取用和回收的时间复杂度为O(n)的前提下，每次取用都能保证命中（如果有的话）呢？有的。 . 图中的对象池中共有7个对象，每个对象节点同时存在于两个不同的链表中。例如，虽然A1节点在图中出现了两次，但其实是同一个对象。 . 共享节点链表本质上是一种LRU（Least Recently Used）结构，只是由于缓存可以持有多个同类对象，和常见的LRU算法有些许不同。LRU的基本思路是基于时间局部性提高缓存的命中率。 时间局部性假设 时间局部性（Temporal Locality）指的是如果一个程序在某个时刻访问了某个存储位置或指令，那么在不久的将来很可能再次访问同一存储位置或指令。换句话说，近期使用过的数据或指令很可能会被重复使用。 共享节点链表是一个这样的数据结构： . | 每个节点同时存在于两个链表中，一个主链表，一个子链表。 . | 主链表只有一个，保存所有节点的引用。 . | 依旧按照队列的形式持有对象，最早放入池中的对象在最前面，最晚放入池中的对象添加到队尾。 | . | 子链表有多个，保存每种不同类型对象的引用。 . | 依旧按照队列的形式持有对象，但这个链表中的对象都是同类对象。 | . | . | 取用对象时，从字典中根据类型访问子链表，并取用第一个对象。 . | 如果没有响应的子链表，那么从主链表的头部取用一个对象。 | 取用时，这个对象会从两个链表中同时删除。 | . | 回收对象时，将该对象加入主链表的尾部，同时也加入相应子链表的尾部。 . | 如果不存在相应子链表，那么创建一个子链表。 | . | . 这种实现方式可以保证在对象池中有可以命中的对象时，必然会命中该对象。对象池中没有可以命中的对象时，拿取最老的对象。 . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html#%E5%BA%94%E7%94%A8%E7%B2%92%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%80%97%E6%97%B6",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html#应用粒子系统的耗时"
+  },"27": {
+    "doc": "粒子池的实现",
+    "title": "粒子池的实现",
+    "content": "Unity的粒子系统（ParticleSystem）占用的内存很大，一个粒子系统会占用10KB左右的内存，哪怕是什么都没有修改的默认粒子也会占用9KB+。一些未加克制的项目中会使用大量的粒子系统，包含未显示的粒子在内，可能会有一万以上甚至数万个粒子系统，导致粒子系统占用的内存达到数百MB。在较低端的iOS系统上RAM非常宝贵，内存占用太多很容易导致app crash，所以对于有这种情况的项目来说，想办法节约粒子系统的内存十分有必要。 . 本文提供的粒子池实现仓库： https://gitee.com/Anso/unity-particle-pool . ",
+    "url": "/_posts/2026-03-10-ParticlePool.html",
+    
+    "relUrl": "/_posts/2026-03-10-ParticlePool.html"
+  },"28": {
+    "doc": "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名",
+    "title": "Unity 效果",
+    "content": "应用前： . | 1 . | MyProject - SampleScene - PC, Mac &amp; Linux Standalone - Unity 2022 . | . 应用后： . | 1 . | MyProject - SampleScene - PC, Mac &amp; Linux Standalone - Unity 2022 [Master] . | . 标题末尾会追加当前 git 分支名，方便在多个 Unity 编辑器窗口之间切换时快速辨别分支。 . ",
+    "url": "/_posts/2026-05-19-UnityEditorWindowTitle.html#unity-%E6%95%88%E6%9E%9C",
+    
+    "relUrl": "/_posts/2026-05-19-UnityEditorWindowTitle.html#unity-效果"
+  },"29": {
+    "doc": "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名",
+    "title": "Unity 代码",
+    "content": "将代码保存为脚本 UpdateUnityEditorProcess 放到项目的任意 Editor 文件夹下即可。脚本会在编辑器启动后自动运行。 . 仅限 Windows 编辑器可用。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 . | using System; using System.Diagnostics; using System.Runtime.InteropServices; using System.Text; using UnityEditor; #if UNITY_EDITOR_WIN // 通过 Win32 API 修改 Unity 编辑器窗口标题，在标题末尾追加当前 git 分支名 public class UpdateUnityEditorProcess { // ── Win32 P/Invoke ────────────────────────────────────────────────────── public delegate bool EnumThreadWindowsCallback(IntPtr hWnd, IntPtr lParam); [DllImport(\"user32.dll\", CharSet = CharSet.Auto, SetLastError = true)] public static extern bool EnumWindows(EnumThreadWindowsCallback callback, IntPtr extraData); [DllImport(\"user32.dll\", CharSet = CharSet.Auto, SetLastError = true)] public static extern int GetWindowThreadProcessId(HandleRef handle, out int processId); [DllImport(\"user32.dll\", CharSet = CharSet.Auto, ExactSpelling = true)] public static extern IntPtr GetWindow(HandleRef hWnd, int uCmd); [DllImport(\"user32.dll\", CharSet = CharSet.Auto)] public static extern bool IsWindowVisible(HandleRef hWnd); [DllImport(\"user32.dll\", CharSet = CharSet.Auto)] public static extern IntPtr GetParent(IntPtr hWnd); [DllImport(\"user32.dll\")] private static extern bool GetWindowText(int hWnd, StringBuilder title, int maxBufSize); [DllImport(\"user32.dll\", EntryPoint = \"SetWindowText\", CharSet = CharSet.Auto)] public extern static int SetWindowText(int hwnd, string lpString); // ── 字段 ──────────────────────────────────────────────────────────────── public IntPtr hwnd = IntPtr.Zero; private bool haveMainWindow = false; private IntPtr mainWindowHandle = IntPtr.Zero; private int processId = 0; private static readonly StringBuilder sbtitle = new(255); private static string GitBranch = \"\"; // ── 单例 ──────────────────────────────────────────────────────────────── private static UpdateUnityEditorProcess _instance; public static UpdateUnityEditorProcess Instance { get { if (_instance == null) { _instance = new UpdateUnityEditorProcess(); _instance.hwnd = _instance.GetMainWindowHandle(Process.GetCurrentProcess().Id); } return _instance; } } // ── Git 分支 ──────────────────────────────────────────────────────────── // 重新获取当前 git 分支名并缓存，供 SetTitle 使用 // 在域重载时（InitializeOnLoad）和资源导入后（AssetPostprocessor）各调用一次 public static void RefreshGitBranch() { GitBranch = GetCurrentGitBranch(); } private static string GetCurrentGitBranch() { try { var process = new Process(); process.StartInfo.FileName = \"git\"; process.StartInfo.Arguments = \"rev-parse --abbrev-ref HEAD\"; process.StartInfo.RedirectStandardOutput = true; process.StartInfo.UseShellExecute = false; process.StartInfo.CreateNoWindow = true; process.Start(); string branch = process.StandardOutput.ReadToEnd().Trim(); process.WaitForExit(); return branch; } catch { return \"\"; } } // ── 标题写入 ──────────────────────────────────────────────────────────── // 读取当前窗口标题，若尚未包含分支标签则追加 \" [分支名]\" // 注意：调用方需在 Unity 完成自身标题更新后再调用（用 delayCall 延迟）， // 否则 Unity 会在我们写入后再次覆盖标题，导致首次追加丢失 public void SetTitle() { sbtitle.Length = 0; GetWindowText(hwnd.ToInt32(), sbtitle, 255); string strTitle = sbtitle.ToString(); string branchTag = \"[\" + GitBranch + \"]\"; // 已含标签时跳过，避免重复追加 if (!string.IsNullOrEmpty(GitBranch) &amp;&amp; !strTitle.Contains(branchTag)) { SetWindowText(hwnd.ToInt32(), strTitle + \" \" + branchTag); } } // ── 主窗口句柄查找 ────────────────────────────────────────────────────── public IntPtr GetMainWindowHandle(int processId) { if (!this.haveMainWindow) { this.mainWindowHandle = IntPtr.Zero; this.processId = processId; EnumThreadWindowsCallback callback = new EnumThreadWindowsCallback(this.EnumWindowsCallback); EnumWindows(callback, IntPtr.Zero); GC.KeepAlive(callback); this.haveMainWindow = true; } return this.mainWindowHandle; } private bool EnumWindowsCallback(IntPtr handle, IntPtr extraParameter) { int num; GetWindowThreadProcessId(new HandleRef(this, handle), out num); if ((num == this.processId) &amp;&amp; this.IsMainWindow(handle)) { this.mainWindowHandle = handle; } return true; } // 主窗口判定：无父窗口、无 owner、且可见 private bool IsMainWindow(IntPtr handle) { return (GetParent(handle) == IntPtr.Zero &amp;&amp; !(GetWindow(new HandleRef(this, handle), 4) != IntPtr.Zero) &amp;&amp; IsWindowVisible(new HandleRef(this, handle))); } } // 域重载时（编辑器启动、脚本编译完成）触发标题更新 [InitializeOnLoad] class UpdateUnityEditorTitle { private static bool isInGame = false; [System.Obsolete] static UpdateUnityEditorTitle() { // 域重载时立即获取分支名，确保后续 delayCall 执行时已有值 UpdateUnityEditorProcess.RefreshGitBranch(); // delayCall 在当前帧末尾执行，此时 Unity 已完成自身标题初始化 EditorApplication.delayCall += DoUpdateTitleFunc; // hierarchyChanged 早于 Unity 写标题触发，需延迟到 delayCall 执行 EditorApplication.hierarchyChanged += () =&gt; EditorApplication.delayCall += DoUpdateTitleFunc; EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged; } static void OnPlaymodeStateChanged() { if (EditorApplication.isPlaying == isInGame) return; isInGame = EditorApplication.isPlaying; DoUpdateTitleFunc(); } static void DoUpdateTitleFunc() { UpdateUnityEditorProcess.Instance.SetTitle(); } } // 资源导入完成后刷新分支名并更新标题 // 切换 git 分支时 Unity 会检测到文件变化并触发重导入，借此实现分支名自动刷新 class UpdateUnityEditorTitlePostprocessor : AssetPostprocessor { static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) { UpdateUnityEditorProcess.RefreshGitBranch(); UpdateUnityEditorProcess.Instance.SetTitle(); } } #endif . | . ",
+    "url": "/_posts/2026-05-19-UnityEditorWindowTitle.html#unity-%E4%BB%A3%E7%A0%81",
+    
+    "relUrl": "/_posts/2026-05-19-UnityEditorWindowTitle.html#unity-代码"
+  },"30": {
+    "doc": "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名",
+    "title": "修改 VS Code的Title",
+    "content": "VS Code对这样的需求本来就有支持。在【File/Preferences/Settings/User/Window/Title】里可以对VS Code的Title进行订制，相关参数： . ${rootPath} 项目路径 . ${activeRepositoryBranchName} 分支名 . ",
+    "url": "/_posts/2026-05-19-UnityEditorWindowTitle.html#%E4%BF%AE%E6%94%B9-vs-code%E7%9A%84title",
+    
+    "relUrl": "/_posts/2026-05-19-UnityEditorWindowTitle.html#修改-vs-code的title"
+  },"31": {
+    "doc": "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名",
+    "title": "在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名",
+    "content": "开发中经常会需要同时开多个项目，虽然可以通过【Preferences/General/Use Project Path in Window Title】选项让Unity在标题栏展示路径来区分当前是哪个项目，但是不同项目可能在不同分支，如果能直接看到当前项目所在的分支就更好了。 . 调查后发现了相关资料：https://zhuanlan.zhihu.com/p/462453808 . 基于此文章的思路，提供一个在Unity标题栏追加项目分支名的脚本，Unity 中仅支持Windows系统。 . ",
+    "url": "/_posts/2026-05-19-UnityEditorWindowTitle.html",
+    
+    "relUrl": "/_posts/2026-05-19-UnityEditorWindowTitle.html"
+  },"32": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "基类：UIAnimation",
+    "content": "UIAnimation 是所有 UI 动画组件的基类，继承自 MonoBehaviour，可以挂到任意 UI 节点上。 . 核心字段： . | 字段 | 说明 | . | autoPlayWhenEnable | 节点 OnEnable 时自动播放入场动画 | . | needTime | 动画时长（秒），通常使用默认值，不推荐修改 | . | waitTime | 开始前的延迟时间，用于错开同一页面内多个元素的动画，或让一个对象在不同时间播放不同动画 | . | overrideCurve / easeCurve | 是否覆盖默认曲线，默认为 EaseInOut | . 核心方法： . | Play(reverse = false)：播放动画。reverse = true 时反向播放（退场） | Complete()：立即跳到终态，用于跳过动画 | GetReady()：立即回到初态，为下次入场做准备 | . 子类需要覆写的方法： . | 1 2 3 . | protected virtual void AnimeUpdate(float v) { } // v ∈ [0,1]，每帧调用 protected virtual void OnComplete() { } // 动画播完时（到达终态） protected virtual void OnReady() { } // 重置到初态时 . | . 与 UIManager 联动： . 由 UIManager 发送退场事件来进行通知，UIAnimation 监听退场事件播放退场动画，不需业务逻辑或 UIManager 持有动画组件的引用。入场时则是通过 UIAnimation 自己的 OnEnable 触发。 . 全局时间因子： . | 1 2 . | public static float PlayTimeMulply = 0.5f; public static float StandardWaitTime = 0.5f * PlayTimeMulply; // UIManager 等待退场动画的时长 . | . 所有动画的实际时长都乘以这个因子。调整 PlayTimeMulply 即可全局加快或放慢所有 UI 动画，方便开发期间调试。 . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#%E5%9F%BA%E7%B1%BBuianimation",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#基类uianimation"
+  },"33": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "调用时序",
+    "content": "每次执行 Forward / Back / Replace 前，UIManager 都会先检查当前是否有活跃的动画组件（由 UIAnimationManager 统一追踪），如果有则广播退场事件并等待 StandardWaitTime： . | 1 2 3 4 5 6 7 8 9 10 . | 调用 ForwardAsync / BackAsync / ReplaceAsync ↓ UIAnimationManager.Count &gt; 0 ? ↓ 是 广播退场事件 → 所有活跃 UIAnimation 播放退场动画 等待 StandardWaitTime（默认 0.25s） ↓ 执行实际导航逻辑（加载新页面、切换栈等） ↓ 新页面 OnEnable → autoPlayWhenEnable → 播放入场动画 . | . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#%E8%B0%83%E7%94%A8%E6%97%B6%E5%BA%8F",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#调用时序"
+  },"34": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "内置实现",
+    "content": " ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#%E5%86%85%E7%BD%AE%E5%AE%9E%E7%8E%B0",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#内置实现"
+  },"35": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "UIAnimationAlpha（透明度淡入）",
+    "content": "自动挂载 CanvasGroup。入场时从 fromAlpha（通常为 0）线性插值到 1，退场反向。 . | 1 2 3 4 . | [SerializeField] float fromAlpha = 0; protected override void AnimeUpdate(float v) =&gt; Group.alpha = Mathf.Lerp(fromAlpha, 1f, v); . | . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#uianimationalpha%E9%80%8F%E6%98%8E%E5%BA%A6%E6%B7%A1%E5%85%A5",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#uianimationalpha透明度淡入"
+  },"36": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "UIAnimationFlyIn（位移 + 缩放飞入）",
+    "content": "入场时从偏移位置和初始缩放飞向目标位置，退场反向飞出。在 Editor 中会绘制 Gizmo 线段显示起点，方便调整。 . | 1 2 3 4 5 6 7 8 . | [SerializeField] Vector3 fromPos; // 相对于目标位置的偏移，如 (0, -200, 0) 表示从下方飞入 [SerializeField] float fromScale = 1; protected override void AnimeUpdate(float v) { transform.localPosition = Vector3.Lerp(trueFromPos, initPos, v); transform.localScale = Vector3.Lerp(trueFromScale, initScale, v); } . | . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#uianimationflyin%E4%BD%8D%E7%A7%BB--%E7%BC%A9%E6%94%BE%E9%A3%9E%E5%85%A5",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#uianimationflyin位移--缩放飞入"
+  },"37": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "使用方式",
+    "content": "在 Prefab 中为需要动画的节点挂上对应的 UIAnimation 组件，在 Inspector 里配置时长、延迟和参数即可。多个子节点可以各自挂不同的动画组件并设置不同的延迟，实现错落的入场效果。 . | 1 2 3 4 5 . | RoleInfoPage (Page) ├── Header → UIAnimationFlyIn waitTime=0.00 fromPos=(0, 80, 0) ├── AvatarPanel → UIAnimationAlpha waitTime=0.05 ├── StatsPanel → UIAnimationFlyIn waitTime=0.10 fromPos=(60, 0, 0) └── ActionButton → UIAnimationAlpha waitTime=0.15 . | . 同一个子节点可以挂载多个动画组件，实现组合效果。也可以通过调整waitTime设计动画的时序。 . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html#%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html#使用方式"
+  },"38": {
+    "doc": "简易 UI 过渡动画系统",
+    "title": "简易 UI 过渡动画系统",
+    "content": "本文介绍一种基于组件和事件的轻量 UI 过渡动画方案，是栈式导航的 Unity UI 管理方案的配套附录。 . UI 动画通常使用 Animator 或 Tween 插件来实现。其中 Animator 的实现非常重，会占用相当多的内存，初始化也会耗费一定时间，并且使用起来也有一定门槛。Tween 插件则只是使用起来有一定门槛。 . 实际上 UI 过渡动画往往非常简单，通常都是一些界面内组件的飞入、旋转、缩放、淡入淡出，难度比 PPT 制作还要低，大多数时候都可以通过一些较为简单的脚本配置来实现。这里介绍一种基于组件和事件的方案：动画逻辑封装在独立的 UIAnimation 组件里。在 UIManager 打开界面后，当前打开的页面上所有 UIAnimation 自动播放入场动画；UIManager 在关闭页面前广播一个退场事件，所有正在活跃的 UIAnimation 收到后播放反向动画，等待一个固定时间后再实际关闭相应界面。整个过程不需要页面脚本参与，动画都在一个固定的时间（通常是零点几秒）内播完，并且配置方式足够简单，可以节约大量人力。 . ",
+    "url": "/_posts/2026-07-01-UIAnimation.html",
+    
+    "relUrl": "/_posts/2026-07-01-UIAnimation.html"
+  },"39": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "UI 管理方式",
+    "content": " ",
+    "url": "/_posts/2026-07-01-UIManagement.html#ui-%E7%AE%A1%E7%90%86%E6%96%B9%E5%BC%8F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#ui-管理方式"
+  },"40": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "两类 UI 单元",
+    "content": "这套方案将所有 UI 划分为两类基本单元： . | Page（页面）：占据全屏的完整界面，是用户当前所在的主视图，例如主城界面、战斗准备界面、商店界面等。 | Floating（浮窗）：叠加在页面之上的弹窗或对话框，例如确认弹窗、角色详情弹窗、设置面板等。 | . 两者设计时可继承自同一个基类，但在导航逻辑上有本质区别：Page 由导航栈驱动，Floating 由显示/隐藏事件驱动。 . 大多数界面都应该是 Page ，但是对于一些弹窗则应该使用 Floating 来实现。这些 Floating 通常出现在 Page 的前面，并且根据需求允许同时展示多个不同的 Floating 。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E4%B8%A4%E7%B1%BB-ui-%E5%8D%95%E5%85%83",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#两类-ui-单元"
+  },"41": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "分层渲染",
+    "content": "UI 元素按层级隔离渲染，每层对应独立的 Canvas 或 RectTransform 节点。层级从低到高依次为： . | 1 2 . | PageLayer ← 页面层（主要游戏界面） FloatingLayer ← 普通浮窗层 . | . 并且可以自定义新的 Layer ，根据需求添加。如 BaseLayer 用于实现常驻的底纹， DialogLayer 专门用于展示会话窗口，以保证它总是展示在 Floating 的前面。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E5%88%86%E5%B1%82%E6%B8%B2%E6%9F%93",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#分层渲染"
+  },"42": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "页面容器",
+    "content": "为了方便统一管理 Page 和它所属的浮窗，每个 Page 在实例化时都会被放入一个页面容器（PageContainer）中。由于 Unity UI 的渲染层级是越靠下的越晚渲染，页面越靠前，所以栈顶的页面其实更靠下。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 . | UIRoot ├── PageLayer │ ├── PageContainer ← 栈底 Page 容器（不可见，被压在下方） │ │ ├── PageRoot │ │ │ └── MainPage ← 栈底 Page │ │ └── FloatingRoot ← 属于这个 Page 的 Floating 容器（当前无 Floating） │ └── PageContainer ← 栈顶 Page 容器（当前可见） │ ├── PageRoot │ │ └── ShopPage ← 当前展示的 Page │ └── FloatingRoot │ └── ItemDetailFloating ← 属于这个 Page 的 Floating └── FloatingLayer ← 全局浮窗，展示在所有页面之上 └── ConfirmFloating ← 一个确认窗口 . | . PageContainer 本身走对象池复用——页面切换时，旧容器整体入池，新容器从池中取出初始化，避免频繁的 Instantiate / Destroy 开销。页面在被覆盖时会保留在层级中，只是被隐藏；在 Pop 后相应的 Page 和 Floating 会被销毁（频繁使用的 Page 或 Floating 可以选择回收到对象池，例如在 Page 和 Floating 的基类上添加一个 bool 值来决定这个对象是否会进入对象池）。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E9%A1%B5%E9%9D%A2%E5%AE%B9%E5%99%A8",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#页面容器"
+  },"43": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "栈式导航",
+    "content": "Page 的导航采用栈（Stack）来管理，核心操作如下： . | 操作 | 行为 | . | Forward | 将新页面压入导航栈，跳转过去，相当于 Push。是一个泛型函数，可以传入任何页面脚本 | . | Back | 弹出当前页面，返回上一页，相当于 Pop | . | Replace | 替换当前页面，不增加栈深度，相当于先 Back 再 Forward | . | BackTo | 回退到栈中某个指定页面，可能会触发多次 Back | . Page 的一些导航需要均设计为异步操作，主要是显示页面的时候的导航，这样可以在导航发生时加入资源加载、数据请求等异步任务。如果请求过重，玩家可能会感觉点击后过了一会儿界面才打开，所以这里的设计需要权衡。如果想给个别页面设置专门的 Loading 状态，可以考虑打开后再在相应页面里实现。 . Floating 的导航不使用异步操作，因为确认弹窗之类的 Floating 对时机要求比较紧迫，我们更希望调用后弹窗立刻显示出来。所以需要反复展示的弹窗必须要支持对象池。Floating 第一次展示时会同步加载资源，如果有明显的卡顿的话，可以考虑对相应界面进行预加载。 . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 . | // 打开一个页面，进入商店 await UIManager.ForwardAsync&lt;ShopPage&gt;(); // 打开 Floating 时传入参数 UIManager.ShowFloating&lt;ItemDetailFloating&gt;(new ItemDetailFloating.Param { itemId = 101 }); // ItemDetailFloating 的实现 public class ItemDetailFloating : Floating { public class Param { public int itemId; } public override void OnShow(object param) { var p = (Param)param; Refresh(p.itemId); } ... // 其它代码 } // 关闭当前页面，返回上一页 UIManager.Back(); // 跨多级返回到指定页面 UIManager.BackTo&lt;ShopPage&gt;(); // 替换当前页面（不增加栈深度，常用于登录后跳主城之类的操作，相当于先 Back 在 Forward） await UIManager.ReplaceAsync&lt;MainPage&gt;(); . | . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E6%A0%88%E5%BC%8F%E5%AF%BC%E8%88%AA",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#栈式导航"
+  },"44": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "Page 生命周期",
+    "content": "Page 在导航过程中可能会经历以下回调，开发者可以按需覆写： . | 1 2 3 4 5 . | OnPrepareAsync(param) ← 进入前异步准备，如果有需要请求的数据通常可以在这里请求，并且页面的资源加载也发生在这个时间（不过这应该是框架功能，不需要开发者专门在这个回调里实现）。并且有需要的话，打开这个界面的时候可以传入任意参数。 OnForwardTo(param) ← 通过 Forward 进入这个界面时的回调，最常用的回调，页面的一些同步初始化可以放在这里，也可以拿到打开界面时传入的参数。 OnBackTo() ← 通过 Back 或 BackTo 回到这个界面时的回调，一般界面都不太需要实现这个，但是部分界面会有需要。 OnNavigatedTo() ← 进入这个界面时的回调，不论 Back 到这里还是 Forward 到这里都会触发。一般不太会用到。 OnLeave() ← 离开这个界面时，不论是被其他页面覆盖还是自己返回。一般不太会用到。 . | . 除此之外，由于 Page 和 Floating 继承自 MonoBehaviour， 所以 MonoBehaviour 的那些生命周期根据需要也是可用的，如 Awake、 Update、 OnEnable 等。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#page-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#page-生命周期"
+  },"45": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "Floating 生命周期",
+    "content": "Floating 通常会挂在 FloatingLayer 下，总是展示在所有 Page 的上方。浮窗由统一的管理器控制显示与隐藏。Floating 的生命周期回调如下： . | 1 2 . | OnShow(page, param) ← 显示时（可挂载在特定 Page 上，并可以接收任意参数。 page 传 null 则放入通用的 FloatingLayer） OnHide() ← 隐藏时 . | . 但每个 Page 也可以持有自己的浮窗挂载节点，用于实现某些浮窗属于某个页面的特殊需求，如从某个 Page 里打开一个浮动的子页面，并且可以被新打开的界面覆盖。当 Page 被 Pop 时，该页面下挂载的所有浮窗会自动随之回收，不需要调用方手动清理。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#floating-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#floating-生命周期"
+  },"46": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "全局事件",
+    "content": "UI 系统可对外暴露若干全局事件，供需要感知 UI 状态的其他模块订阅，无需直接持有 UI 对象的引用。比较常见的也就是页面切换的事件： . | 1 2 . | Action&lt;Page&gt; TopPageChanged // 顶层页面发生变化 Action&lt;Floating, bool&gt; FloatingDisplayChanged // 浮窗显示/隐藏状态变化 . | . 这些事件通常可用于驱动新手引导一类的系统，避免引导类的代码侵入业务逻辑。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E5%85%A8%E5%B1%80%E4%BA%8B%E4%BB%B6",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#全局事件"
+  },"47": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "UI 资源管理方式",
+    "content": "管理 UI 资源（包括 UI 预制件）需要结合项目的资源管理框架进行设计。这里只会讲述一些推荐的和 UI 资源相关的资源管理方式。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#ui-%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E6%96%B9%E5%BC%8F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#ui-资源管理方式"
+  },"48": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "Prefab 文件名与类名严格绑定",
+    "content": "Page / Floating 的 Prefab 文件名必须与脚本名和类名完全一致，系统在运行时将类名作为预制件资源的地址去加载，省去了任何手写映射： . | 1 2 . | 类名: LoginPage → Prefab: LoginPage.prefab 类名: ShopFloating → Prefab: ShopFloating.prefab . | . 这个约定的好处是：新增一个页面只需建文件、写脚本，不需要在任何配置表里登记。当我们使用 ForwardAsync 打开界面时，通过传入一个相应界面脚本的泛型即可打开。不需要在代码中管理字符串，直接用类名就可以找到预制件。 . | 1 2 . | // 打开一个页面，进入商店 await UIManager.ForwardAsync&lt;ShopPage&gt;(); . | . 这样做更方便后续维护，如果在 IDE 里修改了某个页面的脚本名，所有需要展示这个界面的地方都会被同步修改（只是别忘了改预制件的名字）。并且开发时可以直接从 Forward 调用的地方跳转到相应的界面。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#prefab-%E6%96%87%E4%BB%B6%E5%90%8D%E4%B8%8E%E7%B1%BB%E5%90%8D%E4%B8%A5%E6%A0%BC%E7%BB%91%E5%AE%9A",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#prefab-文件名与类名严格绑定"
+  },"49": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "资源分类方式",
+    "content": "UI 资源（脚本 + Prefab）以业务模块为单位组织，而不是把所有 Page 集中放在一个大文件夹里。每个业务模块独占一个顶层文件夹，内部用 $Pages/ 和 $Floatings/ 两个子目录存放 UI 相关内容，脚本和 Prefab 放在同一位置，不拆分。 . 许多项目会将页面放到同一个文件夹里，这样会对资源拆分（如果有需要的话）造成一定的阻碍；并且会导致同一个业务逻辑的 UI 和其他 UI 混在一起，降低开发者的开发效率。 . 对于确实无法或无需归属到某个业务模块的通用 Page 或 Floating（如全局 Loading 弹窗、确认弹窗等），则在顶层单独开 $Pages/ 和 $Floatings/ 两个文件夹统一收纳。 . 使用 $ 符号标记文件夹是否会被放入资源包里。 . 预制件引用的图片或其他资源无需放在这里，而是作为二级资源放在其他的通用资源库的文件夹里，由美术和策划负责人进行管理，以便打包时通过搜索引用将其合理分包。 . 相关内容可参考：如何构建零冗余又内存友好的资源打包方案？ . | 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 . | MainAssets/ │ ├── $Equipment/ ← 装备业务模块 │ ├── $Pages/ │ │ ├── EquipmentPage.cs │ │ ├── EquipmentPage.prefab │ │ ├── EquipmentDetailPage.cs │ │ ├── EquipmentDetailPage.prefab │ │ ├── EquipmentSynthesisPage.cs │ │ └── EquipmentSynthesisPage.prefab │ └── $Floatings/ │ ├── EquipmentInfoFloating.cs │ └── EquipmentInfoFloating.prefab │ ├── $Shop/ ← 商店业务模块 │ ├── $Pages/ │ │ ├── ShopPage.cs │ │ └── ShopPage.prefab │ └── $Floatings/ │ ├── PurchaseConfirmFloating.cs │ └── PurchaseConfirmFloating.prefab │ ├── $Pages/ ← 通用 / 无法或无需归类的 Page │ ├── LoginPage.cs │ ├── LoginPage.prefab │ ├── MainPage.cs │ └── MainPage.prefab │ └── $Floatings/ ← 通用 / 无法或无需归类的 Floating ├── AskConfirmFloating.cs ├── AskConfirmFloating.prefab ├── LoadingFloating.cs ├── LoadingFloating.prefab ├── ItemDetailFloating.cs └── ItemDetailFloating.prefab . | . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E8%B5%84%E6%BA%90%E5%88%86%E7%B1%BB%E6%96%B9%E5%BC%8F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#资源分类方式"
+  },"50": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "UI 资源加载链路",
+    "content": "以打开一个新页面为例，从导航请求到页面显示的完整链路如下： . | 1 2 3 4 5 6 7 8 9 10 11 . | UI 导航请求（Forward） ↓ 向资源管理框架请求异步加载对应 Prefab ↓ 从对象池取出（或新建）PageContainer ↓ 在 PageContainer.pageRoot 下实例化页面 Prefab ↓ 依次执行生命周期（OnPrepareAsync → OnNavigatedTo） ↓ 将 PageContainer 插入对应的 UILayer . | . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#ui-%E8%B5%84%E6%BA%90%E5%8A%A0%E8%BD%BD%E9%93%BE%E8%B7%AF",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#ui-资源加载链路"
+  },"51": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "对象池与资源释放",
+    "content": ". | PageContainer 整体走对象池，页面切换时回收而非销毁。 | Page / Floating Prefab 在 Pop/Hide 时可配置是否放入对象池以便下次复用（适合频繁开关的浮窗）。 | 资源句柄（Handle）由 UI 系统内部统一缓存在字典里，页面关闭时如果无需放入对象池的话，自动销毁预制件并 Release 相关句柄，调用方无需手动释放。 | . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E5%AF%B9%E8%B1%A1%E6%B1%A0%E4%B8%8E%E8%B5%84%E6%BA%90%E9%87%8A%E6%94%BE",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#对象池与资源释放"
+  },"52": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "附录：UI 动画系统",
+    "content": "参见：简易 UI 过渡动画系统 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html#%E9%99%84%E5%BD%95ui-%E5%8A%A8%E7%94%BB%E7%B3%BB%E7%BB%9F",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html#附录ui-动画系统"
+  },"53": {
+    "doc": "栈式导航的 Unity UI 管理方案",
+    "title": "栈式导航的 Unity UI 管理方案",
+    "content": "一款游戏通常有大量各式各样的UI界面，玩家在其中反复进入、退出、跳转。一种常见而粗暴的UI管理方式是，每次跳转都靠手写逻辑来决定”打开哪个UI、关闭哪个UI、回到哪个UI”，随着界面数量增长，这种管理方式会让游戏渐渐变得难以维护。这种简单粗暴的维护方式实际上还有不少项目在用，维护这种界面的时候往往非常痛苦。更有甚者会使用 Canvas 的 Sorting Order 来处理页面间的遮挡关系，这种设计无疑是灾难性的。上面提到的两个问题在实际项目里并不少见，特别是一些历史包袱比较重的项目。 . 栈式导航是一种更成熟的解决方案：在页面之间跳转时，想要展示某个界面就 Push 这个界面来让它入栈，让栈顶的界面显示在最前，并根据需要隐藏后方的界面；从这个界面返回的时候就 Pop 这个界面，之前显示的界面就会自动变回栈顶显示出来。这样页面只需关心自己的生命周期，没有特殊需求的话，页面不需要知道是谁打开了自己、也不需要知道关闭后应该显示谁。本文只提供框架思路，不提供具体代码。 . ",
+    "url": "/_posts/2026-07-01-UIManagement.html",
+    
+    "relUrl": "/_posts/2026-07-01-UIManagement.html"
+  },"54": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "如何表达变化",
+    "content": "下面的这个示例 Json 里的 Modifier 表示服务器进行了一个把 unit-1042 的 level 更新为 18 的操作： . | 1 2 3 4 5 6 7 8 9 10 11 . | { \"modifier\": [ { \"type\": \"UPDATE\", \"target\": \"units\", \"id\": \"unit-1042\", \"path\": \"level\", \"value\": 18 } ] } . | . Modifier 携带了“操作类型、目标对象、数据路径和最终值”。 . 下面使用完全虚构的单位数据说明 Modifier 的不同表达方式。无论修改字段、替换对象还是增删集合成员，传递的都是服务端确认后的最终结果。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html#%E5%A6%82%E4%BD%95%E8%A1%A8%E8%BE%BE%E5%8F%98%E5%8C%96",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html#如何表达变化"
+  },"55": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "更新对象字段",
+    "content": "一次调用可以返回一个 Modifier 的列表，例如：把一个单位的多个字段变化拆成三条 UPDATE。每条变化都通过 target 和 id 定位对象，再由 path 指向一个属性，value 携带该属性的最终值。 . 这种方式只传递实际变化的字段，适合对象较大、单次变化较少的场景。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html#%E6%9B%B4%E6%96%B0%E5%AF%B9%E8%B1%A1%E5%AD%97%E6%AE%B5",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html#更新对象字段"
+  },"56": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "更新整个对象",
+    "content": "亦或是，只发送一条 UPDATE ，但 value 直接携带完整单位；客户端收到后，以整个对象更新本地镜像。 . 根据情况可以采用不同方式。这种情况 path 可以不用传递，因为 target 就足以定位数据了。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html#%E6%9B%B4%E6%96%B0%E6%95%B4%E4%B8%AA%E5%AF%B9%E8%B1%A1",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html#更新整个对象"
+  },"57": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "新增与删除",
+    "content": "ADD 和 REMOVE 改变的是单位集合本身。 . ADD 携带新对象的完整值。服务器数据库添加了 unit-2048，客户端应用 Modifier 后，将同一个键和值加入本地数据库。 . REMOVE 可以从数据库中删除特定对象。 . 通过这些操作，Modifier 可以完整表达服务器的数据变化，客户端只需要在接收到网络消息后解析 Modifier 即可自动完成数据更新。实际开发中可以提供很多便利，很多接口都可以“调后不理”。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html#%E6%96%B0%E5%A2%9E%E4%B8%8E%E5%88%A0%E9%99%A4",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html#新增与删除"
+  },"58": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "服务端如何产生 Modifier",
+    "content": "服务器侧的关键做法，不是在请求结束后扫描整份数据寻找差异，而是在业务修改权威状态时，就通过统一的更新层登记变化。同一份变化记录同时服务于三件事：更新服务器内存中的状态、组织需要持久化的写入，以及生成返回客户端的 Modifier。 . Modifier 只表达状态最终发生了什么变化，不负责解释服务端如何计算出这个结果。对客户端而言，变化来自哪个内部流程并不重要。只要 Modifier 能完整表达最终状态，本地就可以用一致的方式处理。 . 同一次操作产生的多项变化，应当保证其 Modifier 列表的顺序，这样才能确保数据的正确性。如果服务器的一次操作中将一个对象先删除，然后又追加了回来，那么顺序反过来会发生严重的不同步问题。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%A6%82%E4%BD%95%E4%BA%A7%E7%94%9F-modifier",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html#服务端如何产生-modifier"
+  },"59": {
+    "doc": "如何优雅地传递服务器数据变化？",
+    "title": "如何优雅地传递服务器数据变化？",
+    "content": "当服务器同步了一些数据变化到客户端的时候，在客户端的一种常见的做法是：将返回值的数据结构中的每一个字段读取出来，将需要的字段赋值给客户端相应的数据。这种做法没有什么问题，只是需要人来手动接入每个接口的字段，做这样的工作的时候，人偶尔还会犯些小错。 . 一种更好的做法是，保证服务器和客户端的数据结构和字段名完全一致。这样我们就可以通过一些自动化的手段将服务器发送过来的数据同步到客户端，并且完全不需要人参与。使得大部分服务器接口都不需要特别处理返回值。 . 我们设计一种叫做 Modifier 的数据结构，用来表达“数据的变化”。服务端完成业务逻辑的过程中，将数据库的所有变动记录在 Modifier 里，最后将 Modifier 发送到客户端。客户端接收这些变化，程序根据 Modifier 自动更新本地状态，再发送事件让界面和其他模块更新表现。 . 服务端的每一个数据库都可以认为是一个哈希表，由一个 key 索引到一个对象。如 units 数据库里维护着大量 unit 对象。为了能够使用 Modifier 自动同步数据，客户端也需要完全一致的数据结构。 . 当然，这里的“完全一致”指的是需要同步的数据完全一致，服务器可以有额外的不需要同步给客户端的私有数据，但只要某项状态通过 Modifier 传递，它在客户端镜像中就必须有相同的数据结构和字段。通常来说，只要是不涉及隐私或安全的数据，全都同步过来也没什么问题。 . ",
+    "url": "/_posts/2026-07-10-ServerDrivenStateSync.html",
+    
+    "relUrl": "/_posts/2026-07-10-ServerDrivenStateSync.html"
+  },"60": {
+    "doc": "Home",
+    "title": "文章列表",
+    "content": ". | 如何优雅地传递服务器数据变化？ 2026-07-10 | 栈式导航的 Unity UI 管理方案 2026-07-01 | 简易 UI 过渡动画系统 2026-07-01 | 在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名 2026-05-19 | 粒子池的实现 2026-03-10 | C#实现的Rotated IoU算法 2026-03-09 | 如何构建零冗余又内存友好的资源打包方案？ 2026-02-25 | . ",
+    "url": "/#%E6%96%87%E7%AB%A0%E5%88%97%E8%A1%A8",
+    
+    "relUrl": "/#文章列表"
+  },"61": {
+    "doc": "Home",
+    "title": "Home",
+    "content": " ",
+    "url": "/",
+    
+    "relUrl": "/"
+  }
+}

@@ -1,0 +1,70 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 620' role='img' aria-labelledby='title desc'>
+  <title id='title'>服务器与客户端数据镜像使用完全一致的同步结构</title>
+  <desc id='desc'>左右两侧分别展示服务器数据结构和客户端数据镜像，state、units 哈希表、unit-1042 对象以及 level、max_hp、attack 字段逐层对应且类型一致。</desc>
+  <defs>
+    <style>
+      text{font-family:Inter,'Microsoft YaHei',Arial,sans-serif;letter-spacing:0}.label{fill:#667085;font-size:13px;font-weight:600}.heading{fill:#172033;font-size:20px;font-weight:700}.node{fill:#172033;font-size:15px;font-weight:650}.type{fill:#667085;font-size:11px;font-weight:600}.mono{font-family:Consolas,'Cascadia Mono',monospace}.server{fill:#356a9a}.client{fill:#2f6f4e}
+    </style>
+  </defs>
+  <rect width='1200' height='620' fill='#f4f6f8'/>
+
+  <g>
+    <rect x='40' y='56' width='460' height='508' rx='8' fill='#fff' stroke='#b9c9dc' stroke-width='1.5'/>
+    <path d='M48 56h444a8 8 0 0 1 8 8v72H40V64a8 8 0 0 1 8-8z' fill='#dfeaf6'/>
+    <g transform='translate(62 80)' fill='none' stroke='#356a9a' stroke-width='2'><rect width='30' height='28' rx='3'/><path d='M6 8h18M6 14h18M6 20h12'/></g>
+    <text x='108' y='102' class='heading'>服务器数据结构</text>
+
+    <rect x='70' y='162' width='400' height='48' rx='7' fill='#edf4fb' stroke='#b9c9dc'/>
+    <text x='90' y='192' class='node mono'>state</text><rect x='380' y='174' width='70' height='24' rx='4' fill='#dfeaf6'/><text x='415' y='191' text-anchor='middle' class='type server'>ROOT</text>
+    <path d='M90 210v290M90 254h20M90 326h60M90 392h100M90 442h100M90 492h100' fill='none' stroke='#b9c9dc' stroke-width='2'/>
+
+    <rect x='110' y='230' width='340' height='48' rx='7' fill='#f8f9fb' stroke='#cfd6df'/>
+    <text x='130' y='260' class='node mono'>units</text><rect x='342' y='242' width='88' height='24' rx='4' fill='#f0f2f5'/><text x='386' y='259' text-anchor='middle' class='type'>HASH MAP</text>
+
+    <rect x='150' y='302' width='300' height='48' rx='7' fill='#f8f9fb' stroke='#cfd6df'/>
+    <text x='170' y='332' class='node mono'>unit-1042</text><rect x='370' y='314' width='60' height='24' rx='4' fill='#f0f2f5'/><text x='400' y='331' text-anchor='middle' class='type'>UNIT</text>
+
+    <rect x='190' y='374' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='206' y='397' class='node mono'>level</text><text x='430' y='397' text-anchor='end' class='type'>NUMBER</text>
+    <rect x='190' y='424' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='206' y='447' class='node mono'>max_hp</text><text x='430' y='447' text-anchor='end' class='type'>NUMBER</text>
+    <rect x='190' y='474' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='206' y='497' class='node mono'>attack</text><text x='430' y='497' text-anchor='end' class='type'>NUMBER</text>
+  </g>
+
+  <g>
+    <text x='600' y='92' text-anchor='middle' class='label'>SAME SCHEMA</text>
+    <text x='600' y='137' text-anchor='middle' font-family='Arial, sans-serif' font-size='44' font-weight='700' fill='#475467'>≡</text>
+    <path d='M470 186h260M450 254h320M450 326h360M450 392h400M450 442h400M450 492h400' fill='none' stroke='#c5ccd6' stroke-width='1.5' stroke-dasharray='6 6'/>
+    <g fill='#fff' stroke='#2f6f4e' stroke-width='2'>
+      <circle cx='600' cy='186' r='12'/><circle cx='600' cy='254' r='12'/><circle cx='600' cy='326' r='12'/><circle cx='600' cy='392' r='12'/><circle cx='600' cy='442' r='12'/><circle cx='600' cy='492' r='12'/>
+    </g>
+    <g fill='none' stroke='#2f6f4e' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>
+      <path d='M594 186l4 4 8-9'/><path d='M594 254l4 4 8-9'/><path d='M594 326l4 4 8-9'/><path d='M594 392l4 4 8-9'/><path d='M594 442l4 4 8-9'/><path d='M594 492l4 4 8-9'/>
+    </g>
+  </g>
+
+  <g>
+    <rect x='700' y='56' width='460' height='508' rx='8' fill='#fff' stroke='#aac9b8' stroke-width='1.5'/>
+    <path d='M708 56h444a8 8 0 0 1 8 8v72H700V64a8 8 0 0 1 8-8z' fill='#e2f0e8'/>
+    <g transform='translate(722 80)' fill='none' stroke='#2f6f4e' stroke-width='2'><rect width='32' height='26' rx='3'/><path d='M7 26v6M25 26v6M4 32h24'/></g>
+    <text x='768' y='102' class='heading'>客户端数据镜像</text>
+
+    <rect x='730' y='162' width='400' height='48' rx='7' fill='#eaf6ef' stroke='#aac9b8'/>
+    <text x='750' y='192' class='node mono'>state</text><rect x='1040' y='174' width='70' height='24' rx='4' fill='#e2f0e8'/><text x='1075' y='191' text-anchor='middle' class='type client'>ROOT</text>
+    <path d='M750 210v290M750 254h20M750 326h60M750 392h100M750 442h100M750 492h100' fill='none' stroke='#aac9b8' stroke-width='2'/>
+
+    <rect x='770' y='230' width='340' height='48' rx='7' fill='#f8f9fb' stroke='#cfd6df'/>
+    <text x='790' y='260' class='node mono'>units</text><rect x='1002' y='242' width='88' height='24' rx='4' fill='#f0f2f5'/><text x='1046' y='259' text-anchor='middle' class='type'>HASH MAP</text>
+
+    <rect x='810' y='302' width='300' height='48' rx='7' fill='#f8f9fb' stroke='#cfd6df'/>
+    <text x='830' y='332' class='node mono'>unit-1042</text><rect x='1030' y='314' width='60' height='24' rx='4' fill='#f0f2f5'/><text x='1060' y='331' text-anchor='middle' class='type'>UNIT</text>
+
+    <rect x='850' y='374' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='866' y='397' class='node mono'>level</text><text x='1090' y='397' text-anchor='end' class='type'>NUMBER</text>
+    <rect x='850' y='424' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='866' y='447' class='node mono'>max_hp</text><text x='1090' y='447' text-anchor='end' class='type'>NUMBER</text>
+    <rect x='850' y='474' width='260' height='36' rx='6' fill='#fff' stroke='#d8dde5'/>
+    <text x='866' y='497' class='node mono'>attack</text><text x='1090' y='497' text-anchor='end' class='type'>NUMBER</text>
+  </g>
+</svg>

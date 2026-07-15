@@ -1,0 +1,536 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+    .site-nav ul li a {
+      background-image: none;
+    }
+
+  </style>
+
+  
+
+  
+    <script src="/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>如何优雅地传递服务器数据变化？ | Anso</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="如何优雅地传递服务器数据变化？" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="当服务器同步了一些数据变化到客户端的时候，在客户端的一种常见的做法是：将返回值的数据结构中的每一个字段读取出来，将需要的字段赋值给客户端相应的数据。这种做法没有什么问题，只是需要人来手动接入每个接口的字段，做这样的工作的时候，人偶尔还会犯些小错。 一种更好的做法是，保证服务器和客户端的数据结构和字段名完全一致。这样我们就可以通过一些自动化的手段将服务器发送过来的数据同步到客户端，并且完全不需要人参与。使得大部分服务器接口都不需要特别处理返回值。" />
+<meta property="og:description" content="当服务器同步了一些数据变化到客户端的时候，在客户端的一种常见的做法是：将返回值的数据结构中的每一个字段读取出来，将需要的字段赋值给客户端相应的数据。这种做法没有什么问题，只是需要人来手动接入每个接口的字段，做这样的工作的时候，人偶尔还会犯些小错。 一种更好的做法是，保证服务器和客户端的数据结构和字段名完全一致。这样我们就可以通过一些自动化的手段将服务器发送过来的数据同步到客户端，并且完全不需要人参与。使得大部分服务器接口都不需要特别处理返回值。" />
+<link rel="canonical" href="/architecture/2026/07/10/ServerDrivenStateSync.html" />
+<meta property="og:url" content="/architecture/2026/07/10/ServerDrivenStateSync.html" />
+<meta property="og:site_name" content="Anso" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-07-10T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="如何优雅地传递服务器数据变化？" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-07-10T00:00:00+00:00","datePublished":"2026-07-10T00:00:00+00:00","description":"当服务器同步了一些数据变化到客户端的时候，在客户端的一种常见的做法是：将返回值的数据结构中的每一个字段读取出来，将需要的字段赋值给客户端相应的数据。这种做法没有什么问题，只是需要人来手动接入每个接口的字段，做这样的工作的时候，人偶尔还会犯些小错。 一种更好的做法是，保证服务器和客户端的数据结构和字段名完全一致。这样我们就可以通过一些自动化的手段将服务器发送过来的数据同步到客户端，并且完全不需要人参与。使得大部分服务器接口都不需要特别处理返回值。","headline":"如何优雅地传递服务器数据变化？","mainEntityOfPage":{"@type":"WebPage","@id":"/architecture/2026/07/10/ServerDrivenStateSync.html"},"url":"/architecture/2026/07/10/ServerDrivenStateSync.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/" class="site-title lh-tight">
+  Anso
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/" class="nav-list-link">Home</a></li><li class="nav-list-item"><a href="/_posts/2026-03-09-IoU.html" class="nav-list-link">C#实现的Rotated IoU算法</a></li><li class="nav-list-item"><a href="/_posts/2026-05-19-UnityEditorWindowTitle.html" class="nav-list-link">在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名</a></li><li class="nav-list-item"><a href="/_posts/2026-07-10-ServerDrivenStateSync.html" class="nav-list-link">如何优雅地传递服务器数据变化？</a></li><li class="nav-list-item"><a href="/_posts/2026-02-25-bundle.html" class="nav-list-link">如何构建零冗余又内存友好的资源打包方案？</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIManagement.html" class="nav-list-link">栈式导航的 Unity UI 管理方案</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIAnimation.html" class="nav-list-link">简易 UI 过渡动画系统</a></li><li class="nav-list-item"><a href="/_posts/2026-03-10-ParticlePool.html" class="nav-list-link">粒子池的实现</a></li></ul>
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search Anso" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search Anso</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  
+  
+</div>
+
+    <div class="main-content-wrap">
+      
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <div class="page-wrap">
+  <div class="main-content-wrap">
+    <article class="main-content">
+<h1>
+  
+  
+    如何优雅地传递服务器数据变化？
+  
+  
+</h1>
+    
+      
+      
+      <div class="post-meta">
+        <span class="post-category">分类: architecture</span>
+      </div>
+      
+      
+      <blockquote class="note">
+  <p>当服务器同步了一些数据变化到客户端的时候，在客户端的一种常见的做法是：将返回值的数据结构中的每一个字段读取出来，将需要的字段赋值给客户端相应的数据。这种做法没有什么问题，只是需要人来手动接入每个接口的字段，做这样的工作的时候，人偶尔还会犯些小错。</p>
+
+  <p>一种更好的做法是，保证服务器和客户端的数据结构和字段名完全一致。这样我们就可以通过一些自动化的手段将服务器发送过来的数据同步到客户端，并且完全不需要人参与。使得大部分服务器接口都不需要特别处理返回值。</p>
+</blockquote>
+
+<p>我们设计一种叫做 Modifier 的数据结构，用来表达“数据的变化”。服务端完成业务逻辑的过程中，将数据库的所有变动记录在 Modifier 里，最后将 Modifier 发送到客户端。客户端接收这些变化，程序根据 Modifier 自动更新本地状态，再发送事件让界面和其他模块更新表现。</p>
+
+<p>服务端的每一个数据库都可以认为是一个哈希表，由一个 key 索引到一个对象。如 units 数据库里维护着大量 unit 对象。为了能够使用 Modifier 自动同步数据，客户端也需要完全一致的数据结构。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-mirror-schema.svg" alt="服务器数据结构与客户端数据镜像逐层一致" /></p>
+
+<p>当然，这里的“完全一致”指的是需要同步的数据完全一致，服务器可以有额外的不需要同步给客户端的私有数据，但只要某项状态通过 Modifier 传递，它在客户端镜像中就必须有相同的数据结构和字段。通常来说，只要是不涉及隐私或安全的数据，全都同步过来也没什么问题。</p>
+<h1 id="如何表达变化">
+  
+  
+    <a href="#如何表达变化" class="anchor-heading" aria-labelledby="如何表达变化"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 如何表达变化
+  
+  
+</h1>
+    
+
+<p>下面的这个示例 Json 里的 Modifier 表示服务器进行了一个把 <code class="language-plaintext highlighter-rouge">unit-1042</code> 的 <code class="language-plaintext highlighter-rouge">level</code> 更新为 <code class="language-plaintext highlighter-rouge">18</code> 的操作：</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre><span class="p">{</span><span class="w">
+  </span><span class="nl">"modifier"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"UPDATE"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"units"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"unit-1042"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"level"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"value"</span><span class="p">:</span><span class="w"> </span><span class="mi">18</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></pre></td></tr></tbody></table></div></code></pre></div></div>
+<p>Modifier 携带了“操作类型、目标对象、数据路径和最终值”。</p>
+
+<p>下面使用完全虚构的单位数据说明 Modifier 的不同表达方式。无论修改字段、替换对象还是增删集合成员，传递的都是服务端确认后的最终结果。</p>
+<h2 id="更新对象字段">
+  
+  
+    <a href="#更新对象字段" class="anchor-heading" aria-labelledby="更新对象字段"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 更新对象字段
+  
+  
+</h2>
+    
+
+<p>一次调用可以返回一个 Modifier 的列表，例如：把一个单位的多个字段变化拆成三条 <code class="language-plaintext highlighter-rouge">UPDATE</code>。每条变化都通过 <code class="language-plaintext highlighter-rouge">target</code> 和 <code class="language-plaintext highlighter-rouge">id</code> 定位对象，再由 <code class="language-plaintext highlighter-rouge">path</code> 指向一个属性，<code class="language-plaintext highlighter-rouge">value</code> 携带该属性的最终值。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-field-updates.svg" alt="三条 UPDATE 通过图形化 Modifier 分别修改单位属性" /></p>
+
+<p>这种方式只传递实际变化的字段，适合对象较大、单次变化较少的场景。</p>
+<h2 id="更新整个对象">
+  
+  
+    <a href="#更新整个对象" class="anchor-heading" aria-labelledby="更新整个对象"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 更新整个对象
+  
+  
+</h2>
+    
+
+<p>亦或是，只发送一条 <code class="language-plaintext highlighter-rouge">UPDATE</code> ，但 <code class="language-plaintext highlighter-rouge">value</code> 直接携带完整单位；客户端收到后，以整个对象更新本地镜像。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-whole-unit.svg" alt="一条 UPDATE 传递整个单位" /></p>
+
+<p>根据情况可以采用不同方式。这种情况 <code class="language-plaintext highlighter-rouge">path</code> 可以不用传递，因为 <code class="language-plaintext highlighter-rouge">target</code> 就足以定位数据了。</p>
+<h2 id="新增与删除">
+  
+  
+    <a href="#新增与删除" class="anchor-heading" aria-labelledby="新增与删除"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 新增与删除
+  
+  
+</h2>
+    
+
+<p><code class="language-plaintext highlighter-rouge">ADD</code> 和 <code class="language-plaintext highlighter-rouge">REMOVE</code> 改变的是单位集合本身。</p>
+
+<p><code class="language-plaintext highlighter-rouge">ADD</code> 携带新对象的完整值。服务器数据库添加了 <code class="language-plaintext highlighter-rouge">unit-2048</code>，客户端应用 Modifier 后，将同一个键和值加入本地数据库。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-add-unit.svg" alt="ADD 将新单位加入客户端单位哈希表" /></p>
+
+<p><code class="language-plaintext highlighter-rouge">REMOVE</code> 可以从数据库中删除特定对象。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-remove-unit.svg" alt="REMOVE 将单位从客户端单位哈希表移除" /></p>
+
+<p>通过这些操作，Modifier 可以完整表达服务器的数据变化，客户端只需要在接收到网络消息后解析 Modifier 即可自动完成数据更新。实际开发中可以提供很多便利，很多接口都可以“调后不理”。</p>
+<h1 id="服务端如何产生-modifier">
+  
+  
+    <a href="#服务端如何产生-modifier" class="anchor-heading" aria-labelledby="服务端如何产生-modifier"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 服务端如何产生 Modifier
+  
+  
+</h1>
+    
+
+<p>服务器侧的关键做法，不是在请求结束后扫描整份数据寻找差异，而是在业务修改权威状态时，就通过统一的更新层登记变化。同一份变化记录同时服务于三件事：更新服务器内存中的状态、组织需要持久化的写入，以及生成返回客户端的 Modifier。</p>
+
+<p><img src="/_posts/2026-07-10-ServerDrivenStateSync/modifier-server-workflow.svg" alt="服务端在一次请求中产生并提交 Modifier 的工作流程" /></p>
+
+<p>Modifier 只表达状态最终发生了什么变化，不负责解释服务端如何计算出这个结果。对客户端而言，变化来自哪个内部流程并不重要。只要 Modifier 能完整表达最终状态，本地就可以用一致的方式处理。</p>
+
+<p>同一次操作产生的多项变化，应当保证其 Modifier 列表的顺序，这样才能确保数据的正确性。如果服务器的一次操作中将一个对象先删除，然后又追加了回来，那么顺序反过来会发生严重的不同步问题。</p>
+
+    </article>
+  </div>
+  
+  <aside class="side-toc">
+    <nav class="toc-nav">
+      <div class="toc-title">目录</div>
+      <div class="toc-content">
+        <div id="toc-container"></div>
+
+<script>
+(function() {
+  const content = document.querySelector('.main-content');
+  if (!content) return;
+  
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (headings.length === 0) return;
+  
+  const tocContainer = document.getElementById('toc-container');
+  const toc = document.createElement('ul');
+  toc.className = 'toc-list';
+  
+  let currentLevel = 1;
+  let currentList = toc;
+  const stack = [toc];
+  
+  headings.forEach((heading, index) => {
+    // 跳过文章标题（第一个h1）
+    if (heading.tagName === 'H1' && index === 0) return;
+    
+    const level = parseInt(heading.tagName.substring(1));
+    const text = heading.textContent;
+    const id = heading.id || 'heading-' + index;
+    
+    if (!heading.id) {
+      heading.id = id;
+    }
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + id;
+    a.textContent = text;
+    a.className = 'toc-link toc-level-' + level;
+    li.appendChild(a);
+    
+    if (level > currentLevel) {
+      const newList = document.createElement('ul');
+      newList.className = 'toc-sublist';
+      const lastLi = currentList.lastElementChild;
+      if (lastLi) {
+        lastLi.appendChild(newList);
+      }
+      stack.push(newList);
+      currentList = newList;
+    } else if (level < currentLevel) {
+      const diff = currentLevel - level;
+      for (let i = 0; i < diff && stack.length > 1; i++) {
+        stack.pop();
+      }
+      currentList = stack[stack.length - 1];
+    }
+    
+    currentList.appendChild(li);
+    currentLevel = level;
+  });
+  
+  if (toc.children.length > 0) {
+    tocContainer.appendChild(toc);
+  }
+  
+  // 平滑滚动
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 更新URL但不滚动
+        history.pushState(null, null, this.getAttribute('href'));
+      }
+    });
+  });
+})();
+</script>
+
+      </div>
+    </nav>
+  </aside>
+</div>
+
+<style>
+.main {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-wrap {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content-wrap article {
+  max-width: none;
+}
+
+.side-toc {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  width: 280px;
+  height: fit-content;
+  padding: 1rem;
+  border-left: 1px solid #eeebee;
+  flex-shrink: 0;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #5c5962;
+}
+
+.toc-nav {
+  font-size: 0.875rem;
+}
+
+.toc-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc-content li {
+  margin: 0.25rem 0;
+}
+
+.toc-content a {
+  color: #5c5962;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.toc-content a:hover {
+  color: #7253ed;
+}
+
+.toc-content ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc-content li li a {
+  font-size: 0.8125rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #5c5962;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eeebee;
+}
+
+@media (max-width: 66.5rem) {
+  .page-wrap {
+    flex-direction: column;
+  }
+  
+  .side-toc {
+    position: static;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eeebee;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+}
+</style>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+
+  
+
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
+

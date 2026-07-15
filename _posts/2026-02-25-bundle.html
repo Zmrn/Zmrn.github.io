@@ -1,0 +1,1609 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+
+    
+    .site-nav > ul.nav-list:first-child > li:not(:nth-child(5)) > a,
+    .site-nav > ul.nav-list:first-child > li > ul > li a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:not(:first-child) a,
+    .site-nav li.external a {
+      background-image: none;
+    }
+
+    .site-nav > ul.nav-list:first-child > li:nth-child(5) > a {
+      font-weight: 600;
+      text-decoration: none;
+    }.site-nav > ul.nav-list:first-child > li:nth-child(5) > button svg {
+      transform: rotate(-90deg);
+    }.site-nav > ul.nav-list:first-child > li.nav-list-item:nth-child(5) > ul.nav-list {
+      display: block;
+    }
+  </style>
+
+  
+
+  
+    <script src="/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>如何构建零冗余又内存友好的资源打包方案？ | Anso</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="如何构建零冗余又内存友好的资源打包方案？" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description." />
+<meta property="og:description" content="Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description." />
+<link rel="canonical" href="/_posts/2026-02-25-bundle.html" />
+<meta property="og:url" content="/_posts/2026-02-25-bundle.html" />
+<meta property="og:site_name" content="Anso" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="如何构建零冗余又内存友好的资源打包方案？" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"Write an awesome description for your new site here. You can edit this line in _config.yml. It will appear in your document head meta (for Google search results) and in your feed.xml site description.","headline":"如何构建零冗余又内存友好的资源打包方案？","url":"/_posts/2026-02-25-bundle.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/" class="site-title lh-tight">
+  Anso
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/" class="nav-list-link">Home</a></li><li class="nav-list-item"><a href="/_posts/2026-03-09-IoU.html" class="nav-list-link">C#实现的Rotated IoU算法</a></li><li class="nav-list-item"><a href="/_posts/2026-05-19-UnityEditorWindowTitle.html" class="nav-list-link">在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名</a></li><li class="nav-list-item"><a href="/_posts/2026-07-10-ServerDrivenStateSync.html" class="nav-list-link">如何优雅地传递服务器数据变化？</a></li><li class="nav-list-item"><a href="/_posts/2026-02-25-bundle.html" class="nav-list-link">如何构建零冗余又内存友好的资源打包方案？</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIManagement.html" class="nav-list-link">栈式导航的 Unity UI 管理方案</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIAnimation.html" class="nav-list-link">简易 UI 过渡动画系统</a></li><li class="nav-list-item"><a href="/_posts/2026-03-10-ParticlePool.html" class="nav-list-link">粒子池的实现</a></li></ul>
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search Anso" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search Anso</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  
+  
+</div>
+
+    <div class="main-content-wrap">
+      
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <div class="page-wrap">
+  <div class="main-content-wrap">
+    <article class="main-content">
+<h1>
+  
+  
+    如何构建零冗余又内存友好的资源打包方案？
+  
+  
+</h1>
+    
+      
+      
+      <div class="post-meta">
+        <span class="post-category">分类: unity</span>
+      </div>
+      
+      
+      <blockquote class="note">
+  <p>本文会简单介绍下使用Unity的AssetBundle进行打包时可能遇到的一些问题，之后列出几个常见的分包算法并分析其利弊，最后给出一个可以解决前述算法中提到的问题的分包算法。
+只是一些笔者处理资源打包相关问题时的研究结果，用于优化资源的打包方案。自认为可以用于大多数的情况，但未必适用于所有情况。有疑问或更好的解决方案的话欢迎讨论交流。</p>
+</blockquote>
+<h1 id="一个简单的冗余">
+  
+  
+    <a href="#一个简单的冗余" class="anchor-heading" aria-labelledby="一个简单的冗余"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 一个简单的冗余
+  
+  
+</h1>
+    
+<p>如果游戏中有两个角色的预制件A和B，他们可以出现在地图上进行战斗。同时，他们持有着同一张图片的引用。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image.png" alt="whiteboard_exported_image" /></p>
+
+<p>图中蓝色块代表预制件（或其他会被直接加载的资源），白色块代表被预制件引用的资源。</p>
+
+<p>这种情况，两个资源同时引用另一个资源，有哪些打Bundle的方案呢？我们使用绿色的块将同一个bundle中的文件包裹起来，以展示几种不同的分包方案：</p>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;">
+    <div style="text-align: center;">
+        <img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_1.png" alt="打进同一个bundle" style="max-width: 420px; height: auto;" />
+        <div style="margin-top: 8px; font-size: 1em; height: 28px; display: flex; align-items: center; justify-content: center;">打进同一个bundle</div>
+    </div>
+    <div style="text-align: center;">
+        <img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_3.png" alt="打进两个不同bundle" style="max-width: 420px; height: auto;" />
+        <div style="margin-top: 8px; font-size: 1em; height: 28px; display: flex; align-items: center; justify-content: center;">打进两个不同bundle</div>
+    </div>
+    <div style="text-align: center;">
+        <img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_2.png" alt="打进三个不同bundle" style="max-width: 420px; height: auto;" />
+        <div style="margin-top: 8px; font-size: 1em; height: 28px; display: flex; align-items: center; justify-content: center;">打进三个不同bundle</div>
+    </div>
+</div>
+
+<p>当然还有更多不太可取的打包方案，这里不再枚举。</p>
+
+<p>在不同场景下，不同的打包方案可能各有优劣。</p>
+
+<ul>
+  <li>
+    <p>方案1：在A，B总是同时被加载和卸载时，只看资源分配的话，这是最优的方案（但未必是合理的方案）。内存占用和Bundle数量、大小都是该需求下的最优解。但是这种情况只是少数，而且无法保证A和B是不是总是同时加载和卸载。由于A和B耦合在一起，如果游戏中A先于B卸载了，那么必须在B也卸载后，这个Bundle才能被彻底卸载；如果只想加载A，这种情况也会无法避免地将一部分多余的B的表单信息加载进来。</p>
+  </li>
+  <li>
+    <p>方案2：在A和B不保证同时出现时，是一种可以接受的方案。对内存是最优解，但是出现了冗余资源。role.png同时被包含在两个Bundle中，资源占用的硬盘空间变大了。</p>
+  </li>
+  <li>
+    <p>方案3：不论A和B是否同时出现，该方案在内存和资源占用上都是最优解，但Bundle数量是最多的。Bundle的信息本身也会占用一定的容量，也会反映在内存和硬盘的占用上。同时，Bundle数量越多，加载的IO消耗也越高。所以我们在考虑内存、硬盘大小的同时，还要尽量让Bundle数量更少。但总的来说，考虑到更普遍、更常见的状况，方案3是综合最佳的。方案3兼顾内存和硬盘的容量，在满足一些条件的情况下还可以通过程序自动生成这样的分包方案。
+不过，本节的例子还是太简单了一些。</p>
+  </li>
+</ul>
+<h1 id="一个稍复杂的冗余">
+  
+  
+    <a href="#一个稍复杂的冗余" class="anchor-heading" aria-labelledby="一个稍复杂的冗余"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 一个稍复杂的冗余
+  
+  
+</h1>
+    
+
+<p>如果我们的角色持有的引用并非图片，而是Spine动画呢？</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_4.png" alt="whiteboard_exported_image (4)" /></p>
+
+<p>Spine动画通常至少包含六个文件，这种情况下，比较合理的打包是什么样的呢？</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_5.png" alt="whiteboard_exported_image (5)" /></p>
+
+<p>如果只有A.prefab引用了这个Spine动画，那么把Spine动画的文件和预制件A打包在同一个Bundle里就是最优解。这种情况下，加载一次Bundle就可以将预制件A所需要的依赖全部加载进来。</p>
+
+<p>那么如果同时有两个预制件引用了同一个Spine动画呢？</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_6.png" alt="whiteboard_exported_image (6)" /></p>
+
+<p>预制件A和B同时引用这个Spine动画。可以看出，Spine的六个文件中，有五个都是由Spine的主配置文件XXX_SkeletonData.asset间接持有引用，不被预制件直接引用。多数（但不是全部）情况下，我们不会单独加载或引用其中的一个文件，或绕过XXX_SkeletonData.asset访问后面的文件。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_7.png" alt="whiteboard_exported_image (7)" /></p>
+
+<p>参考之前的案例，我们可以得出上面的分包方案。将Spine动画的六个文件单独分包，A和B也单独分包。</p>
+
+<p>如果再加入一个不同的角色，那么更好的分包方案应该是这样的：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_8.png" alt="whiteboard_exported_image (8)" /></p>
+
+<p>由于role2只被C.prefab引用，它应该和C.prefab打入同一个Bundle。</p>
+
+<blockquote class="note">
+  <p>一个优秀的打包方案应该满足以下条件：</p>
+  <ul>
+    <li>零冗余，对硬盘友好
+      <ul>
+        <li>不要同一个资源复制几份。</li>
+        <li>Unity内置资源需要单独处理。</li>
+        <li>使用SBP。Built-in Pipeline有Bug，打包对Texture2D的引用时必然出现冗余。</li>
+      </ul>
+    </li>
+    <li>低耦合，对内存友好
+      <ul>
+        <li>加载A的时候，不要把不需要的B相关信息也加载进来。</li>
+        <li>释放Bundle的时候资源不会相互掣肘。</li>
+      </ul>
+    </li>
+    <li>Bundle数量要少，对IO性能友好
+      <ul>
+        <li>加载一个需要的资源时，能尽量少地加载新的Bundle。</li>
+        <li>Bundle数量越多，内存占用越高，也更容易导致加载一个资源需要一口气加载一大堆Bundle的情况。</li>
+      </ul>
+    </li>
+  </ul>
+</blockquote>
+<h1 id="常见的零冗余打包方案">
+  
+  
+    <a href="#常见的零冗余打包方案" class="anchor-heading" aria-labelledby="常见的零冗余打包方案"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 常见的零冗余打包方案
+  
+  
+</h1>
+    
+<h2 id="反向引用计数法">
+  
+  
+    <a href="#反向引用计数法" class="anchor-heading" aria-labelledby="反向引用计数法"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 反向引用计数法
+  
+  
+</h2>
+    
+<p>我们将一个资源<strong>被哪些资源引用</strong>的列表称之为这个资源的反向引用列表。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image.png" alt="whiteboard_exported_image" /></p>
+
+<p>如上图，role.png的反向引用为</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+</pre></td><td class="rouge-code"><pre><span class="p">[</span><span class="n">A</span><span class="p">.</span><span class="n">prefab</span><span class="p">,</span> <span class="n">B</span><span class="p">.</span><span class="n">prefab</span><span class="p">]</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>几乎所有打包方案都会获取资源的反向引用：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+</pre></td><td class="rouge-code"><pre><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// 获取全量反向引用</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="c1">/// &lt;param name="assetSet"&gt;全量资源的信息集合&lt;/param&gt;</span>
+<span class="c1">/// &lt;returns&gt;&lt;/returns&gt;</span>
+<span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">GenerateInvertReference</span><span class="p">(</span><span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">CompactFileBundleInfo</span><span class="p">&gt;</span> <span class="n">assetSet</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">asset</span> <span class="k">in</span> <span class="n">assetSet</span><span class="p">.</span><span class="n">Keys</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">string</span><span class="p">[]</span> <span class="n">dependencies</span> <span class="p">=</span> <span class="n">AssetDatabase</span><span class="p">.</span><span class="nf">GetDependencies</span><span class="p">(</span><span class="n">asset</span><span class="err">，</span> <span class="k">true</span><span class="p">/</span><span class="k">false</span><span class="p">);</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">dependencyPath</span> <span class="k">in</span> <span class="n">dependencies</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="c1">// 不需要的文件不处理，例如.cs文件通常不算进去</span>
+            <span class="k">if</span> <span class="p">(!</span><span class="nf">IsNeededAsset</span><span class="p">(</span><span class="n">dependencyPath</span><span class="p">))</span> <span class="k">continue</span><span class="p">;</span>
+            <span class="c1">// GetDependencies返回的列表里包含资源本身，需要过滤</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">dependencyPath</span> <span class="p">==</span> <span class="n">asset</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+ 
+            <span class="c1">// 记录反向引用，只记录这个资源被哪些资源引用了</span>
+            <span class="n">assetSet</span><span class="p">[</span><span class="n">dependencyPath</span><span class="p">].</span><span class="n">InvertReferences</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">asset</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>反向引用计数法的基本原理是，计算出资源的反向引用数（不需要记录具体被哪些资源引用，只需要记录反向引用的数量），将反向引用数大于1的资源各自单独打包。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_10.png" alt="whiteboard_exported_image (10)" /></p>
+
+<p>如上图，由于role.png的反向引用数为2，大于1，所以role.png将会被单独打包。</p>
+
+<p>这种打包方案可以保证零冗余，但是也有一些别的问题：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_11.png" alt="whiteboard_exported_image (11)" /></p>
+
+<p>如上图，当role1.png，role2.png，role3.png都被A和B引用时，按照上述方案，这三张贴图会被各自打进一个bundle里。最终的bundle数为5。这并不是很好的方案，只为了加载一个预制件A，需要加载4个bundle。实际上很容易看出，这三张贴图打进同一个bundle里会更好。</p>
+<h2 id="自定义规则法">
+  
+  
+    <a href="#自定义规则法" class="anchor-heading" aria-labelledby="自定义规则法"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 自定义规则法
+  
+  
+</h2>
+    
+
+<p>在面对Bundle数过多问题时，追加特殊规则来约束Bundle的数量是一个很常见的方法，</p>
+
+<ul>
+  <li>
+    <p>例如可以设定一个这样的规则，当打包面对上面的问题时，如果role1.png，role2.png，role3.png在同一个文件夹，那么将它们打入同一个bundle。也就是根据资源所在的文件夹将次级引用的资源整合打包。</p>
+  </li>
+  <li>
+    <p>者根据项目情况，约定某些文件夹内的资源必定按照文件夹整合打包，将特定目录及子目录中的资源根据文件夹进行分包。</p>
+  </li>
+  <li>
+    <p>或约定某些类型的文件会被打入同一个Bundle。例如将lua文件打入同一个bundle，将shader打入同一个bundle，都是非常常见的做法。</p>
+  </li>
+  <li>
+    <p>还有一些根据项目情况处理的更复杂的自定义规则，例如将Spine相关的文件全部打入同一个Bundle，通过规则规避上面提到的spine引用问题。</p>
+  </li>
+</ul>
+
+<p>自定义规则法可以<strong>配合其他的零冗余打包算法一起使用</strong>，该方法往往需要对打包出来的资源进行人工分析后，由于该方法根据具体项目具体分析，具体规则往往五花八门。</p>
+
+<p>值得注意的是，如果不谨慎考虑规则的合理性和实现方法的话，自定义规则可能会引入一些额外的问题。例如笔者就见过一些自定义规则导致了打出的bundle之间有环引用，进一步导致引用关系混乱的问题。</p>
+
+<blockquote class="note">
+  <p>Bundle之间总是不应该出现环引用，因为这说明这几个bundle总是需要一起加载，那么它们其实应该打成同一个bundle才对。如果出现了环引用，那么需要考虑一下分包规则是不是有什么问题。</p>
+</blockquote>
+<h2 id="反向查找法">
+  
+  
+    <a href="#反向查找法" class="anchor-heading" aria-labelledby="反向查找法"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 反向查找法
+  
+  
+</h2>
+    
+
+<p>首先计算并储存每个资源的<strong>直接反向引用</strong>。</p>
+<h3 id="直接反向引用是什么">
+  
+  
+    <a href="#直接反向引用是什么" class="anchor-heading" aria-labelledby="直接反向引用是什么"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 直接反向引用是什么？
+  
+  
+</h3>
+    
+
+<ul>
+  <li>
+    <p>上面计算反向引用的算法中使用AssetDatabase.GetDependencies(asset)递归获取了资源的所有引用，然后让这些引用记录自己为<strong>反向引用</strong>。使用AssetDatabase.GetDependencies(asset, false)非递归地进行计算的话，得到的就是<strong>直接反向引用</strong>。</p>
+  </li>
+  <li>
+    <p>和反向引用计数法不同，反向查找法需要使用<strong>直接反向引用</strong>，具体原因将在下文讲解。</p>
+  </li>
+</ul>
+
+<p>算法通过以下规则进行递归查找：</p>
+
+<p>每个资源查找自己的<strong>直接</strong><strong>反向引用</strong><strong>的Bundle名</strong></p>
+
+<ol>
+  <li>
+    <p>如果没有反向引用，使用自己的路径作为Bundle名。</p>
+  </li>
+  <li>
+    <p>当该资源所有的<strong>直接反向引用</strong>Bundle名相同时，自己也使用该Bundle名；否则使用自己的路径作为Bundle名。</p>
+  </li>
+</ol>
+
+<p>最后可得<strong>每个资源应当被分配到哪个Bundle</strong>的信息。Bundle名可以在最后替换成哈希值。用这种方式处理环引用的对象时可能需要一些技巧。</p>
+
+<p><strong>理想情况下</strong>，这些文件的反向引用看起来是这样的：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_12.png" alt="whiteboard_exported_image (12)" /></p>
+
+<p>图中虚线代表反向引用。</p>
+
+<blockquote class="note">
+  <p>注意，这里讲解的是理想情况下，实际情况下并非如此。我们将在之后讨论实际的情况。</p>
+</blockquote>
+
+<p>下面提到的包名不是最终的包名，只是一个例子。实际上可以将前面的点号替换为_之类的符号，最终换成哈希值。</p>
+
+<ul>
+  <li>
+    <p>A和B两个预制件没有反向引用，根据规则1，直接使用自己的路径作为Bundle名【A.prefab.bundle, B.prefab.bundle】；</p>
+  </li>
+  <li>
+    <p>role_SkeletonData.asset有两个直接反向引用，也就是A和B。由于A和B的Bundle名不同，根据规则2，使用自己的路径作为Bundle名【role_SkeletonData.asset.bundle】</p>
+  </li>
+  <li>
+    <p>role.skel.bytes和role_Atlas.asset的直接反向引用是role_SkeletonData.asset，所以它们所有的直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它们也使用这个bundle名。</p>
+  </li>
+  <li>
+    <p>role.atlas.txt和role_Material.mat的直接反向引用是role_Atlas.asset，由于role_Atlas.asset的bundle名是【role_SkeletonData.asset.bundle】，所以这两个文件的所有的直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它们也使用这个bundle名。</p>
+  </li>
+  <li>
+    <p>role.png的直接反向引用是role_Material.mat，所以它的所有直接反向引用bundle名都是【role_SkeletonData.asset.bundle】，于是根据规则2它也使用这个bundle名。</p>
+  </li>
+</ul>
+
+<p>最终分包会得到三个Bundle：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_13.png" alt="whiteboard_exported_image (13)" /></p>
+
+<p>算法如下：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+</pre></td><td class="rouge-code"><pre><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// 计算资源所在Bundle的名字</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="c1">/// &lt;param name="asset"&gt;计算这个资源所在Bundle的名字&lt;/param&gt;</span>
+<span class="c1">/// &lt;param name="allAssetsDict"&gt;所有资源的记录，其中包含资源的直接反向引用&lt;/param&gt;</span>
+<span class="k">public</span> <span class="k">static</span> <span class="kt">string</span> <span class="nf">GetAssetBundleName</span><span class="p">(</span><span class="n">CompactFileBundleInfo</span> <span class="n">asset</span><span class="p">,</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">CompactFileBundleInfo</span><span class="p">&gt;</span> <span class="n">allAssetsDict</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// 先根据文件名生成一次Bundle名防止无限循环</span>
+    <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span> <span class="p">=</span> <span class="n">asset</span><span class="p">.</span><span class="n">FullPath</span><span class="p">;</span>
+    <span class="kt">string</span> <span class="n">tempBundleName</span> <span class="p">=</span> <span class="k">null</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">iref</span> <span class="k">in</span> <span class="n">asset</span><span class="p">.</span><span class="n">InvertReferences</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">refAsset</span> <span class="p">=</span> <span class="n">allAssetsDict</span><span class="p">[</span><span class="n">iref</span><span class="p">];</span>
+        <span class="kt">var</span> <span class="n">refBoundleName</span> <span class="p">=</span> <span class="nf">GetAssetBundleName</span><span class="p">(</span><span class="n">refAsset</span><span class="p">,</span> <span class="n">allAssetsDict</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tempBundleName</span> <span class="p">==</span> <span class="k">null</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">tempBundleName</span> <span class="p">=</span> <span class="n">refBoundleName</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tempBundleName</span> <span class="p">!=</span> <span class="n">refBoundleName</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span> <span class="p">=</span> <span class="n">asset</span><span class="p">.</span><span class="n">FullPath</span><span class="p">;</span>
+            <span class="k">return</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">tempBundleName</span> <span class="p">!=</span> <span class="k">null</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span> <span class="p">=</span> <span class="n">tempBundleName</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+<h3 id="现实总是不够理想的情况">
+  
+  
+    <a href="#现实总是不够理想的情况" class="anchor-heading" aria-labelledby="现实总是不够理想的情况"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 现实总是不够理想的情况……
+  
+  
+</h3>
+    
+
+<p>刚才提到的理想情况下的反向引用是这样的：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_12.png" alt="whiteboard_exported_image (12)" /></p>
+
+<p>但实际情况是这样的：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_14.png" alt="whiteboard_exported_image (14)" /></p>
+
+<p>预制件实际上是直接持有材质的引用的。所以该打包方案并不会如预期一般打出三个bundle，而会将材质和贴图单独打包，打出4个bundle。</p>
+<h3 id="还有一些情况">
+  
+  
+    <a href="#还有一些情况" class="anchor-heading" aria-labelledby="还有一些情况"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 还有一些情况
+  
+  
+</h3>
+    
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_11.png" alt="whiteboard_exported_image (11)" /></p>
+
+<p>对于传统的反向查找法，面对刚才提到过的这种情况，三张贴图也会被分别打进3个Bundle里。</p>
+<h2 id="反向查找法的增强">
+  
+  
+    <a href="#反向查找法的增强" class="anchor-heading" aria-labelledby="反向查找法的增强"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 反向查找法的增强
+  
+  
+</h2>
+    
+<p>对于上面的问题，可以通过完善反向查找法的逻辑来解决。这种方法在继承直接反向引用的包名时，保留了更多的信息。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+</pre></td><td class="rouge-code"><pre><span class="c1">/// &lt;summary&gt;</span>
+<span class="c1">/// 计算资源的递归反向引用集</span>
+<span class="c1">/// &lt;/summary&gt;</span>
+<span class="c1">/// &lt;param name="asset"&gt;计算这个资源的递归反向引用集&lt;/param&gt;</span>
+<span class="c1">/// &lt;param name="allAssetsDict"&gt;所有资源的记录，其中包含资源的直接反向引用&lt;/param&gt;</span>
+<span class="k">public</span> <span class="k">static</span> <span class="n">SortedSet</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">&gt;</span> <span class="nf">GetAssetBundleName</span><span class="p">(</span><span class="n">CompactFileBundleInfo</span> <span class="n">asset</span><span class="p">,</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">CompactFileBundleInfo</span><span class="p">&gt;</span> <span class="n">allAssetsDict</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="n">Count</span> <span class="p">&gt;</span> <span class="m">0</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// 先生成一次防止无限循环</span>
+    <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">asset</span><span class="p">.</span><span class="nf">RefreshDirectAssetsBundleName</span><span class="p">());</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">iref</span> <span class="k">in</span> <span class="n">asset</span><span class="p">.</span><span class="n">InvertReferences</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">refAsset</span> <span class="p">=</span> <span class="n">allAssetsDict</span><span class="p">[</span><span class="n">iref</span><span class="p">];</span>
+        <span class="kt">var</span> <span class="n">refBoundleName</span> <span class="p">=</span> <span class="nf">GetAssetBundleName</span><span class="p">(</span><span class="n">refAsset</span><span class="p">,</span> <span class="n">allAssetsDict</span><span class="p">);</span>
+ 
+        <span class="k">if</span><span class="p">(</span><span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="n">Count</span> <span class="p">==</span> <span class="m">1</span> <span class="p">&amp;&amp;</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="nf">Contains</span><span class="p">(</span><span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span><span class="p">))</span> 
+        <span class="p">{</span>
+            <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="nf">Clear</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">i</span> <span class="k">in</span> <span class="n">refBoundleName</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">asset</span><span class="p">.</span><span class="n">BundleNameDict</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>通过继承所有的直接反向引用，来保留所有的引用信息。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+</pre></td><td class="rouge-code"><pre><span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">asset</span> <span class="k">in</span> <span class="n">allAssetsDict</span><span class="p">.</span><span class="n">Values</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">hashSet</span> <span class="p">=</span> <span class="nf">GetAssetBundleName</span><span class="p">(</span><span class="n">asset</span><span class="p">,</span> <span class="n">allAssetsDict</span><span class="p">);</span>
+    <span class="c1">// SortedSet&lt;string&gt;遍历时，字符串是排序后的</span>
+    <span class="n">asset</span><span class="p">.</span><span class="n">BundleName</span> <span class="p">=</span> <span class="kt">string</span><span class="p">.</span><span class="nf">Join</span><span class="p">(</span><span class="s">"&amp;"</span><span class="p">,</span> <span class="n">hashSet</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>最后，将直接反向引用名集合<strong>排序后连接起来</strong>作为Bundle名。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_15.png" alt="whiteboard_exported_image (15)" /></p>
+
+<p>由于保留了更多反向引用信息，算法可以得知：虽然两个直接反向引用被打入了不同的Bundle，但role1.png、role2.png、role3.png的直接反向引用是相同的，所以也会被打入同一个Bundle。遂解决了上面提到的情况。</p>
+
+<p>但即使是加强的反向查找法，也无法解决Spine打包中提到的问题。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_16.png" alt="whiteboard_exported_image (16)" /></p>
+
+<p>材质文件的直接反向引用列表为[A.prefab, B.prefab, role_Atlas.asset]，依旧无法与其他Spine文件打入同一个Bundle。</p>
+<h3 id="还有一些情况-1">
+  
+  
+    <a href="#还有一些情况-1" class="anchor-heading" aria-labelledby="还有一些情况-1"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 还有一些情况
+  
+  
+</h3>
+    
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_17.png" alt="whiteboard_exported_image (11)" /></p>
+
+<p>类似的，对于这种情况：C的直接反向引用为[A.prefab, D.prefab]，D的直接反向引用为[B.prefab, C.prefab]，所以C和D也无法打入同一个bundle。</p>
+
+<p>那么有没有一种更加完善的打包方案，能在不进行特殊处理的情况下解决这个问题？</p>
+<h2 id="资源的分级一级资源和依赖资源">
+  
+  
+    <a href="#资源的分级一级资源和依赖资源" class="anchor-heading" aria-labelledby="资源的分级一级资源和依赖资源"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 资源的分级：一级资源和依赖资源
+  
+  
+</h2>
+    
+
+<p>想要使用更完善的资源打包方案，必须有更完善的资源管理方式。这里，我们定义一级资源和依赖资源的概念：</p>
+
+<p>凡是通过代码显式加载的资源都属于<strong>一级资源</strong>。这些资源往往是有<strong>明确的使用途径</strong>的。</p>
+
+<p>其他<strong>被一级资源引用</strong>的资源也会被打入Bundle里，这些资源被称为<strong>依赖资源</strong>。</p>
+<h3 id="一级资源通常有哪些">
+  
+  
+    <a href="#一级资源通常有哪些" class="anchor-heading" aria-labelledby="一级资源通常有哪些"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 一级资源通常有哪些？
+  
+  
+</h3>
+    
+
+<ul>
+  <li>各种预制件
+    <ul>
+      <li>UI界面预制件</li>
+      <li>UI组件</li>
+      <li>角色/敌人/物体</li>
+      <li>地图元素</li>
+    </ul>
+  </li>
+  <li>动态加载的文本/序列化文件
+    <ul>
+      <li>代码文件</li>
+      <li>自定义序列化文件
+        <ul>
+          <li>json/xml/bytes/…</li>
+        </ul>
+      </li>
+      <li>自定义配置文件</li>
+    </ul>
+  </li>
+  <li>动态加载的贴图
+    <ul>
+      <li>头像/头像框/装饰</li>
+      <li>技能图标/Item图标</li>
+      <li>角色头像/立绘/半身绘</li>
+      <li>动态背景图/动态UI元素</li>
+      <li>图集</li>
+      <li>……</li>
+    </ul>
+  </li>
+  <li>动态加载的材质</li>
+  <li>
+    <p>动态加载的网格/动画数据</p>
+  </li>
+  <li><strong>任何可能需要直接加载的资源</strong></li>
+</ul>
+
+<p>管理一级资源时，应当对资源进行<strong>人工分类</strong>，放入相应的、<strong>有明确管理标准</strong>的文件夹。任何一个一级资源的文件夹都应该能明确其中的资源是什么用途的，<strong>命名时也应该能结合内容一眼看出这些资源的用途</strong>。
+如：</p>
+
+<ul>
+  <li>存放头像的文件夹</li>
+  <li>存放立绘的文件夹</li>
+  <li>存放技能图标的文件夹</li>
+  <li>存放UI页面的文件夹</li>
+  <li>存放浮窗的文件夹</li>
+  <li>存放角色预制件的文件夹</li>
+  <li>……</li>
+</ul>
+
+<blockquote>
+  <p><img src="/_posts/2026-02-25-bundle/hierachy.png" alt="hierachy" /></p>
+
+  <p>图中展示了一种一级资源管理方式，按照业务逻辑进行分类，按照$符号文件夹名管理。每个业务逻辑可以拥有自己的资源文件夹，其中存放了该业务逻辑使用的UI界面、浮窗预制件和lua代码文件。如果需要的话，还可以有其他的文件。UI预制件所引用的<strong>贴图、动画、材质或其它资源</strong>不会放在这里，而是放在美术/策划用于堆放素材的另一个不被$符号标记的文件夹。这些资源将在打包时被自动囊括进来，并按照规则分入适当的Bundle。</p>
+</blockquote>
+
+<p>不容易分类的页面/浮窗可以统一放在一个文件夹里。</p>
+
+<p>也可以选择将同类的资源也可以统一放在同一个文件夹中，如将所有UI预制件放在同一个文件夹里，将代码文件放在另一个文件夹。虽然对于分包算法来说不会有太大区别，但这会让开发人员在开发和维护业务逻辑时，在寻找想要的文件这件事上浪费一些时间。</p>
+
+<p>部分特殊的一级资源可以用<strong>自定义规则法</strong>单独处理，如lua或shader文件可以在一个统一的流程中进行搜集，在搜集其他的资源时忽略。或将角色与其技能特效的大量预制件放入特定命名的文件夹内，使其打入同一个bundle（因为这些预制件往往都是同时加载和卸载的）。</p>
+
+<p>通过一级资源向下递归检索来获取游戏中需要使用的所有资源。凡不是一级资源的，都是依赖资源，应该放在一级资源文件夹之外的地方，避免扰乱检索。可以新建相应的文件夹进行管理。</p>
+
+<p>依赖资源的文件管理不需要那么严格，只要不会干扰一级资源，打包系统不在乎它在哪里。但为了开发中的方便，依赖资源也应该按照一定规则进行存放。依赖资源的存放规则以美术/策划人员方便为准。</p>
+<h1 id="引用交集法">
+  
+  
+    <a href="#引用交集法" class="anchor-heading" aria-labelledby="引用交集法"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 引用交集法
+  
+  
+</h1>
+    
+
+<p>有了合理的资源管理方案，就可以有更完善的资源打包方案。</p>
+
+<p>接下来介绍引用交集法。依旧以该分包图为例：</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_8.png" alt="whiteboard_exported_image (8)" /></p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+</pre></td><td class="rouge-code"><pre><span class="p">[</span><span class="nf">MenuItem</span><span class="p">(</span><span class="s">"Tools/BuildBundleCompact"</span><span class="p">)]</span> 
+<span class="k">public</span> <span class="k">static</span> <span class="k">void</span> <span class="nf">Build</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">CompactBundleBuilderTools</span><span class="p">.</span><span class="nf">ClearBuildPath</span><span class="p">();</span>
+    <span class="n">AssetDatabase</span><span class="p">.</span><span class="nf">Refresh</span><span class="p">();</span>
+ 
+    <span class="c1">// 生成所有要打入bundle的资源，以及这个资源需要打入哪个Bundle的信息</span>
+    <span class="kt">var</span> <span class="n">allAssetsDict</span> <span class="p">=</span> <span class="nf">GetCompactFileBundleInfoDict</span><span class="p">();</span>
+    <span class="c1">// 生成每个bundle的信息</span>
+    <span class="kt">var</span> <span class="n">bundleInfoDict</span> <span class="p">=</span> <span class="nf">GetAllAssetBundlesInfo</span><span class="p">(</span><span class="n">allAssetsDict</span><span class="p">);</span>
+    <span class="c1">// 保存log</span>
+    <span class="n">CompactBundleBuilderTools</span><span class="p">.</span><span class="nf">SaveBundleInfoToJson</span><span class="p">(</span><span class="n">bundleInfoDict</span><span class="p">);</span>
+    
+    <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span><span class="s">$"Start Build AssetBundles. AssetBundles Count : </span><span class="p">{</span><span class="n">bundleInfoDict</span><span class="p">.</span><span class="n">Count</span><span class="p">}</span><span class="s">, Build Target : </span><span class="p">{</span><span class="n">BundleBuildTarget</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+    <span class="nf">BuildAssetbundles</span><span class="p">(</span><span class="n">bundleInfoDict</span><span class="p">);</span>
+    <span class="n">Debug</span><span class="p">.</span><span class="nf">Log</span><span class="p">(</span><span class="s">$"Build Success! AssetBundles build to path : </span><span class="p">{</span><span class="n">BundlePath</span><span class="p">}</span><span class="s">"</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>和其他分包算法类似，该算法也需要获取所有需要打入Bundle的资源，并计算出它们应当被分配到哪个Bundle里。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+</pre></td><td class="rouge-code"><pre><span class="k">public</span> <span class="k">static</span> <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">CompactFileBundleInfo</span><span class="p">&gt;</span> <span class="nf">GetCompactFileBundleInfoDict</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// 获取一级资源</span>
+    <span class="kt">var</span> <span class="n">directAssetDict</span> <span class="p">=</span> <span class="n">CompactBundleBuilderTools</span><span class="p">.</span><span class="nf">GetAllDirectAssetsInfoDict</span><span class="p">();</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">asset</span> <span class="k">in</span> <span class="n">directAssetDict</span><span class="p">.</span><span class="n">Values</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// 每个一级资源生成自己的BundleName</span>
+        <span class="n">asset</span><span class="p">.</span><span class="nf">RefreshDirectAssetsBundleName</span><span class="p">();</span>
+    <span class="p">}</span>
+ 
+    <span class="c1">// 获取依赖资源</span>
+    <span class="kt">var</span> <span class="n">dependenciesAssets</span> <span class="p">=</span> <span class="nf">GetDependenciesInfo</span><span class="p">(</span><span class="n">directAssetDict</span><span class="p">);</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">asset</span> <span class="k">in</span> <span class="n">dependenciesAssets</span><span class="p">.</span><span class="n">Values</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// 每个依赖资源根据自己被引用的情况，决定自己应该在哪个bundle里</span>
+        <span class="n">asset</span><span class="p">.</span><span class="nf">RefreshBundleNameByInvertDirectAssetReferences</span><span class="p">();</span>
+    <span class="p">}</span>
+ 
+    <span class="c1">// 将一级资源和资源资源合并处理</span>
+    <span class="c1">// 因为依赖资源的内容通常比较多，所以把一级资源归入依赖资源的容器处理</span>
+    <span class="n">Dictionary</span><span class="p">&lt;</span><span class="kt">string</span><span class="p">,</span> <span class="n">CompactFileBundleInfo</span><span class="p">&gt;</span> <span class="n">allAssetsDict</span> <span class="p">=</span> <span class="n">dependenciesAssets</span><span class="p">;</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="kt">var</span> <span class="n">directAssets</span> <span class="k">in</span> <span class="n">directAssetDict</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">allAssetsDict</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="n">directAssets</span><span class="p">.</span><span class="n">Key</span><span class="p">,</span> <span class="n">directAssets</span><span class="p">.</span><span class="n">Value</span><span class="p">);</span>
+    <span class="p">}</span>
+ 
+    <span class="k">return</span> <span class="n">allAssetsDict</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>首先根据目录规则获取所有一级资源，如获取某个路径下的所有资源，或获取所有$符号开头的文件夹内的资源。然后给一级资源分配Bundle。</p>
+
+<p><strong>下文假设所有一级资源单独打包，即每个一级资源都会单独打进一个Bundle。当然，即使部分文件夹下的一级资源需要合并打包，也是容易处理的，算法的基本思想一样，这里不再赘述。</strong></p>
+
+<p>分配Bundle时，首先使用一级资源的名字作为Bundle名（之后可以使用哈希值，或者其他命名分配方式修改包名，此处不再赘述）。</p>
+
+<p>为描述简洁，这里不使用资源的全路径名，而是只使用资源名。实际处理的时候，<strong>如果不能保证文件不重名</strong>，需要使用全路径名。如果能够保证文件不重名，则可以使用资源名（带后缀）。</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>文件路径</td>
+      <td>一级引用信息</td>
+      <td>Bundle名</td>
+    </tr>
+    <tr>
+      <td>A.prefab</td>
+      <td>无</td>
+      <td>A_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>B.prefab</td>
+      <td>无</td>
+      <td>B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>C.prefab</td>
+      <td>无</td>
+      <td>C_prefab.ab</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>这样，所有一级资源应该打入的Bundle就计算完毕了。之后通过查找引用，找到所有二级资源。</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>文件路径</td>
+      <td>一级引用信息</td>
+      <td>Bundle名</td>
+    </tr>
+    <tr>
+      <td>role_SkeletonData.asset</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.skel.bytes</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role_Atlas.asset</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.atlas.txt</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role_Material.mat</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.png</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_SkeletonData.asset</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.skel.bytes</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_Atlas.asset</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.atlas.txt</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_Material.mat</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.png</td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>接下来需要为这些文件分配相应的Bundle名。首先生成每个文件的一级反向引用信息。即生成反向引用的时候，只关注哪些一级资源引用了自己，不关注其他资源的引用情况。</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>文件路径</td>
+      <td>一级引用信息</td>
+      <td>Bundle名</td>
+    </tr>
+    <tr>
+      <td>role_SkeletonData.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.skel.bytes</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role_Atlas.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.atlas.txt</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role_Material.mat</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role.png</td>
+      <td>A.prefab, B.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_SkeletonData.asset</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.skel.bytes</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_Atlas.asset</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.atlas.txt</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2_Material.mat</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>role2.png</td>
+      <td>C.prefab</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>之后，根据不同的一级引用信息，为文件生成Bundle名。</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>文件路径</td>
+      <td>一级引用信息</td>
+      <td>Bundle名</td>
+    </tr>
+    <tr>
+      <td>role_SkeletonData.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.skel.bytes</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role_Atlas.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.atlas.txt</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role_Material.mat</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.png</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_SkeletonData.asset</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.skel.bytes</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_Atlas.asset</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.atlas.txt</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_Material.mat</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.png</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>通过简单的字符串拼接，就可以将资源正确分配到所在的Bundle。可以注意到，role2的Spine动画由于只被C.prefab引用，按照目前的命名规则，会和C.prefab放到同一个Bundle里。而role的Spine动画由于被两个一级引用持有，会创建一个名为A_prefab__B_prefab.ab的新资源包。这样，程序就生成了本节开头的分包图。</p>
+
+<p>将一级引用和二级引用的表结合起来，可以得到最终的分包策略表：</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>文件路径</td>
+      <td>一级引用信息</td>
+      <td>Bundle名</td>
+    </tr>
+    <tr>
+      <td>A.prefab</td>
+      <td>无</td>
+      <td>A_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>B.prefab</td>
+      <td>无</td>
+      <td>B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>C.prefab</td>
+      <td>无</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role_SkeletonData.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.skel.bytes</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role_Atlas.asset</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.atlas.txt</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role_Material.mat</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role.png</td>
+      <td>A.prefab, B.prefab</td>
+      <td>A_prefab__B_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_SkeletonData.asset</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.skel.bytes</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_Atlas.asset</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.atlas.txt</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2_Material.mat</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+    <tr>
+      <td>role2.png</td>
+      <td>C.prefab</td>
+      <td>C_prefab.ab</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>将Bundle置于表头：</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bundle名</td>
+      <td>包含文件</td>
+    </tr>
+    <tr>
+      <td>A_prefab.ab</td>
+      <td>A.prefab</td>
+    </tr>
+    <tr>
+      <td>B_prefab.ab</td>
+      <td>B.prefab</td>
+    </tr>
+    <tr>
+      <td>A_prefab__B_prefab.ab</td>
+      <td>role_SkeletonData.asset</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role.skel.bytes</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role_Atlas.asset</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role.atlas.txt</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role_Material.mat</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role.png</td>
+    </tr>
+    <tr>
+      <td>C_prefab.ab</td>
+      <td>C.prefab</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2_SkeletonData.asset</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2.skel.bytes</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2_Atlas.asset</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2.atlas.txt</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2_Material.mat</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td>role2.png</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>按照该表打包即可。</p>
+
+<p><img src="/_posts/2026-02-25-bundle/whiteboard_exported_image_17.png" alt="whiteboard_exported_image (11)" /></p>
+
+<p>对于刚才提到的这个问题：C的一级引用为[A.prefab, B.prefab]，D的一级引用为[A.prefab, B.prefab]，所以C和D会被打进同一个bundle，不会出现环引用。</p>
+
+<p>该算法可以基于反向查找法进行优化来实现（代码会比较短，处理环引用的时候需要一些技巧），或是直接按照上面描述的顺序来实现（更简单直接，实现会长一些），这里不提供具体代码。</p>
+
+    </article>
+  </div>
+  
+  <aside class="side-toc">
+    <nav class="toc-nav">
+      <div class="toc-title">目录</div>
+      <div class="toc-content">
+        <div id="toc-container"></div>
+
+<script>
+(function() {
+  const content = document.querySelector('.main-content');
+  if (!content) return;
+  
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (headings.length === 0) return;
+  
+  const tocContainer = document.getElementById('toc-container');
+  const toc = document.createElement('ul');
+  toc.className = 'toc-list';
+  
+  let currentLevel = 1;
+  let currentList = toc;
+  const stack = [toc];
+  
+  headings.forEach((heading, index) => {
+    // 跳过文章标题（第一个h1）
+    if (heading.tagName === 'H1' && index === 0) return;
+    
+    const level = parseInt(heading.tagName.substring(1));
+    const text = heading.textContent;
+    const id = heading.id || 'heading-' + index;
+    
+    if (!heading.id) {
+      heading.id = id;
+    }
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + id;
+    a.textContent = text;
+    a.className = 'toc-link toc-level-' + level;
+    li.appendChild(a);
+    
+    if (level > currentLevel) {
+      const newList = document.createElement('ul');
+      newList.className = 'toc-sublist';
+      const lastLi = currentList.lastElementChild;
+      if (lastLi) {
+        lastLi.appendChild(newList);
+      }
+      stack.push(newList);
+      currentList = newList;
+    } else if (level < currentLevel) {
+      const diff = currentLevel - level;
+      for (let i = 0; i < diff && stack.length > 1; i++) {
+        stack.pop();
+      }
+      currentList = stack[stack.length - 1];
+    }
+    
+    currentList.appendChild(li);
+    currentLevel = level;
+  });
+  
+  if (toc.children.length > 0) {
+    tocContainer.appendChild(toc);
+  }
+  
+  // 平滑滚动
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 更新URL但不滚动
+        history.pushState(null, null, this.getAttribute('href'));
+      }
+    });
+  });
+})();
+</script>
+
+      </div>
+    </nav>
+  </aside>
+</div>
+
+<style>
+.main {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-wrap {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content-wrap article {
+  max-width: none;
+}
+
+.side-toc {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  width: 280px;
+  height: fit-content;
+  padding: 1rem;
+  border-left: 1px solid #eeebee;
+  flex-shrink: 0;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #5c5962;
+}
+
+.toc-nav {
+  font-size: 0.875rem;
+}
+
+.toc-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc-content li {
+  margin: 0.25rem 0;
+}
+
+.toc-content a {
+  color: #5c5962;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.toc-content a:hover {
+  color: #7253ed;
+}
+
+.toc-content ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc-content li li a {
+  font-size: 0.8125rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #5c5962;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eeebee;
+}
+
+@media (max-width: 66.5rem) {
+  .page-wrap {
+    flex-direction: column;
+  }
+  
+  .side-toc {
+    position: static;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eeebee;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+}
+</style>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+
+  
+
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
+

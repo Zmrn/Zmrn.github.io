@@ -1,0 +1,871 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-default.css">
+
+  <link rel="stylesheet" href="/assets/css/just-the-docs-head-nav.css" id="jtd-head-nav-stylesheet">
+
+  <style id="jtd-nav-activation">
+  
+    .site-nav ul li a {
+      background-image: none;
+    }
+
+  </style>
+
+  
+
+  
+    <script src="/assets/js/vendor/lunr.min.js"></script>
+  
+
+  <script src="/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+
+
+
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>栈式导航的 Unity UI 管理方案 | Anso</title>
+<meta name="generator" content="Jekyll v4.4.1" />
+<meta property="og:title" content="栈式导航的 Unity UI 管理方案" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="一款游戏通常有大量各式各样的UI界面，玩家在其中反复进入、退出、跳转。一种常见而粗暴的UI管理方式是，每次跳转都靠手写逻辑来决定”打开哪个UI、关闭哪个UI、回到哪个UI”，随着界面数量增长，这种管理方式会让游戏渐渐变得难以维护。这种简单粗暴的维护方式实际上还有不少项目在用，维护这种界面的时候往往非常痛苦。更有甚者会使用 Canvas 的 Sorting Order 来处理页面间的遮挡关系，这种设计无疑是灾难性的。上面提到的两个问题在实际项目里并不少见，特别是一些历史包袱比较重的项目。 栈式导航是一种更成熟的解决方案：在页面之间跳转时，想要展示某个界面就 Push 这个界面来让它入栈，让栈顶的界面显示在最前，并根据需要隐藏后方的界面；从这个界面返回的时候就 Pop 这个界面，之前显示的界面就会自动变回栈顶显示出来。这样页面只需关心自己的生命周期，没有特殊需求的话，页面不需要知道是谁打开了自己、也不需要知道关闭后应该显示谁。本文只提供框架思路，不提供具体代码。" />
+<meta property="og:description" content="一款游戏通常有大量各式各样的UI界面，玩家在其中反复进入、退出、跳转。一种常见而粗暴的UI管理方式是，每次跳转都靠手写逻辑来决定”打开哪个UI、关闭哪个UI、回到哪个UI”，随着界面数量增长，这种管理方式会让游戏渐渐变得难以维护。这种简单粗暴的维护方式实际上还有不少项目在用，维护这种界面的时候往往非常痛苦。更有甚者会使用 Canvas 的 Sorting Order 来处理页面间的遮挡关系，这种设计无疑是灾难性的。上面提到的两个问题在实际项目里并不少见，特别是一些历史包袱比较重的项目。 栈式导航是一种更成熟的解决方案：在页面之间跳转时，想要展示某个界面就 Push 这个界面来让它入栈，让栈顶的界面显示在最前，并根据需要隐藏后方的界面；从这个界面返回的时候就 Pop 这个界面，之前显示的界面就会自动变回栈顶显示出来。这样页面只需关心自己的生命周期，没有特殊需求的话，页面不需要知道是谁打开了自己、也不需要知道关闭后应该显示谁。本文只提供框架思路，不提供具体代码。" />
+<link rel="canonical" href="/unity/2026/07/01/UIManagement.html" />
+<meta property="og:url" content="/unity/2026/07/01/UIManagement.html" />
+<meta property="og:site_name" content="Anso" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-07-01T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="栈式导航的 Unity UI 管理方案" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2026-07-01T00:00:00+00:00","datePublished":"2026-07-01T00:00:00+00:00","description":"一款游戏通常有大量各式各样的UI界面，玩家在其中反复进入、退出、跳转。一种常见而粗暴的UI管理方式是，每次跳转都靠手写逻辑来决定”打开哪个UI、关闭哪个UI、回到哪个UI”，随着界面数量增长，这种管理方式会让游戏渐渐变得难以维护。这种简单粗暴的维护方式实际上还有不少项目在用，维护这种界面的时候往往非常痛苦。更有甚者会使用 Canvas 的 Sorting Order 来处理页面间的遮挡关系，这种设计无疑是灾难性的。上面提到的两个问题在实际项目里并不少见，特别是一些历史包袱比较重的项目。 栈式导航是一种更成熟的解决方案：在页面之间跳转时，想要展示某个界面就 Push 这个界面来让它入栈，让栈顶的界面显示在最前，并根据需要隐藏后方的界面；从这个界面返回的时候就 Pop 这个界面，之前显示的界面就会自动变回栈顶显示出来。这样页面只需关心自己的生命周期，没有特殊需求的话，页面不需要知道是谁打开了自己、也不需要知道关闭后应该显示谁。本文只提供框架思路，不提供具体代码。","headline":"栈式导航的 Unity UI 管理方案","mainEntityOfPage":{"@type":"WebPage","@id":"/unity/2026/07/01/UIManagement.html"},"url":"/unity/2026/07/01/UIManagement.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <a class="skip-to-main" href="#main-content">Skip to main content</a>
+  <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="svg-link" viewBox="0 0 24 24">
+  <title>Link</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+</symbol>
+
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+  <title>Menu</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+</symbol>
+
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+  <title>Expand</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+    <polyline points="9 18 15 12 9 6"></polyline>
+  </svg>
+</symbol>
+
+  <!-- Feather. MIT License: https://github.com/feathericons/feather/blob/master/LICENSE -->
+<symbol id="svg-external-link" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-external-link">
+  <title id="svg-external-link-title">(external link)</title>
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line>
+</symbol>
+
+  
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+  <title>Document</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+    <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+  </svg>
+</symbol>
+
+    <symbol id="svg-search" viewBox="0 0 24 24">
+  <title>Search</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+</symbol>
+
+  
+  
+    <!-- Bootstrap Icons. MIT License: https://github.com/twbs/icons/blob/main/LICENSE.md -->
+<symbol id="svg-copy" viewBox="0 0 16 16">
+  <title>Copy</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+    <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+  </svg>
+</symbol>
+<symbol id="svg-copied" viewBox="0 0 16 16">
+  <title>Copied</title>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-check-fill" viewBox="0 0 16 16">
+    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+  </svg>
+</symbol>
+
+  
+</svg>
+
+  
+    <header class="side-bar">
+  <div class="site-header">
+    <a href="/" class="site-title lh-tight">
+  Anso
+
+</a>
+    <button id="menu-button" class="site-button btn-reset" aria-label="Menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><use xlink:href="#svg-menu"></use></svg>
+    </button>
+  </div>
+
+  <nav aria-label="Main" id="site-nav" class="site-nav">
+  
+  
+    <ul class="nav-list"><li class="nav-list-item"><a href="/" class="nav-list-link">Home</a></li><li class="nav-list-item"><a href="/_posts/2026-03-09-IoU.html" class="nav-list-link">C#实现的Rotated IoU算法</a></li><li class="nav-list-item"><a href="/_posts/2026-05-19-UnityEditorWindowTitle.html" class="nav-list-link">在 Unity 编辑器和 VS Code 标题栏显示项目路径和 Git 分支名</a></li><li class="nav-list-item"><a href="/_posts/2026-07-10-ServerDrivenStateSync.html" class="nav-list-link">如何优雅地传递服务器数据变化？</a></li><li class="nav-list-item"><a href="/_posts/2026-02-25-bundle.html" class="nav-list-link">如何构建零冗余又内存友好的资源打包方案？</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIManagement.html" class="nav-list-link">栈式导航的 Unity UI 管理方案</a></li><li class="nav-list-item"><a href="/_posts/2026-07-01-UIAnimation.html" class="nav-list-link">简易 UI 过渡动画系统</a></li><li class="nav-list-item"><a href="/_posts/2026-03-10-ParticlePool.html" class="nav-list-link">粒子池的实现</a></li></ul>
+  
+</nav>
+
+
+<div class="d-md-block d-none site-footer">
+  
+  
+    This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+  
+  </div>
+</header>
+
+  
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+  
+    
+
+<div class="search" role="search">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" class="search-input" tabindex="0" placeholder="Search Anso" autocomplete="off">
+    <label for="search-input" class="search-label">
+      <span class="sr-only">Search Anso</span>
+      <svg viewBox="0 0 24 24" class="search-icon" aria-hidden="true"><use xlink:href="#svg-search"></use></svg>
+    </label>
+  </div>
+  <div id="search-results" class="search-results"></div>
+</div>
+
+  
+  
+  
+</div>
+
+    <div class="main-content-wrap">
+      
+      <div id="main-content" class="main-content">
+        <main>
+          
+            <div class="page-wrap">
+  <div class="main-content-wrap">
+    <article class="main-content">
+<h1>
+  
+  
+    栈式导航的 Unity UI 管理方案
+  
+  
+</h1>
+    
+      
+      
+      <div class="post-meta">
+        <span class="post-category">分类: unity</span>
+      </div>
+      
+      
+      <blockquote class="note">
+  <p>一款游戏通常有大量各式各样的UI界面，玩家在其中反复进入、退出、跳转。一种常见而粗暴的UI管理方式是，每次跳转都靠手写逻辑来决定”打开哪个UI、关闭哪个UI、回到哪个UI”，随着界面数量增长，这种管理方式会让游戏渐渐变得难以维护。这种简单粗暴的维护方式实际上还有不少项目在用，维护这种界面的时候往往非常痛苦。更有甚者会使用 Canvas 的 Sorting Order 来处理页面间的遮挡关系，这种设计无疑是灾难性的。上面提到的两个问题在实际项目里并不少见，特别是一些历史包袱比较重的项目。</p>
+
+  <p>栈式导航是一种更成熟的解决方案：在页面之间跳转时，想要展示某个界面就 Push 这个界面来让它入栈，让栈顶的界面显示在最前，并根据需要隐藏后方的界面；从这个界面返回的时候就 Pop 这个界面，之前显示的界面就会自动变回栈顶显示出来。这样页面只需关心自己的生命周期，没有特殊需求的话，页面不需要知道是谁打开了自己、也不需要知道关闭后应该显示谁。本文只提供框架思路，不提供具体代码。</p>
+</blockquote>
+
+<p><img src="/_posts/2026-07-01-UIManagement/stack-navigation.png" alt="栈式导航示意图" /></p>
+<h1 id="ui-管理方式">
+  
+  
+    <a href="#ui-管理方式" class="anchor-heading" aria-labelledby="ui-管理方式"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> UI 管理方式
+  
+  
+</h1>
+    
+<h2 id="两类-ui-单元">
+  
+  
+    <a href="#两类-ui-单元" class="anchor-heading" aria-labelledby="两类-ui-单元"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 两类 UI 单元
+  
+  
+</h2>
+    
+
+<p>这套方案将所有 UI 划分为两类基本单元：</p>
+
+<ul>
+  <li><strong>Page（页面）</strong>：占据全屏的完整界面，是用户当前所在的主视图，例如主城界面、战斗准备界面、商店界面等。</li>
+  <li><strong>Floating（浮窗）</strong>：叠加在页面之上的弹窗或对话框，例如确认弹窗、角色详情弹窗、设置面板等。</li>
+</ul>
+
+<p>两者设计时可继承自同一个基类，但在导航逻辑上有本质区别：Page 由导航栈驱动，Floating 由显示/隐藏事件驱动。</p>
+
+<p>大多数界面都应该是 Page ，但是对于一些弹窗则应该使用 Floating 来实现。这些 Floating 通常出现在 Page 的前面，并且根据需求允许同时展示多个不同的 Floating 。</p>
+
+<p><img src="/_posts/2026-07-01-UIManagement/role-info-page.png" alt="RoleInfoPage 示例" /></p>
+
+<p><img src="/_posts/2026-07-01-UIManagement/ask-floating.png" alt="AskFloating 示例" /></p>
+<h2 id="分层渲染">
+  
+  
+    <a href="#分层渲染" class="anchor-heading" aria-labelledby="分层渲染"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 分层渲染
+  
+  
+</h2>
+    
+
+<p>UI 元素按层级隔离渲染，每层对应独立的 Canvas 或 RectTransform 节点。层级从低到高依次为：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre>PageLayer       ← 页面层（主要游戏界面）
+FloatingLayer   ← 普通浮窗层
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>并且可以自定义新的 Layer ，根据需求添加。如 BaseLayer 用于实现常驻的底纹， DialogLayer 专门用于展示会话窗口，以保证它总是展示在 Floating 的前面。</p>
+<h2 id="页面容器">
+  
+  
+    <a href="#页面容器" class="anchor-heading" aria-labelledby="页面容器"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 页面容器
+  
+  
+</h2>
+    
+
+<p>为了方便统一管理 Page 和它所属的浮窗，每个 Page 在实例化时都会被放入一个<strong>页面容器（PageContainer）</strong>中。由于 Unity UI 的渲染层级是越靠下的越晚渲染，页面越靠前，所以栈顶的页面其实更靠下。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+</pre></td><td class="rouge-code"><pre>UIRoot
+├── PageLayer
+│   ├── PageContainer                ← 栈底 Page 容器（不可见，被压在下方）
+│   │   ├── PageRoot
+│   │   │   └── MainPage             ← 栈底 Page
+│   │   └── FloatingRoot             ← 属于这个 Page 的 Floating 容器（当前无 Floating）
+│   └── PageContainer                ← 栈顶 Page 容器（当前可见）
+│       ├── PageRoot
+│       │   └── ShopPage             ← 当前展示的 Page
+│       └── FloatingRoot
+│           └── ItemDetailFloating   ← 属于这个 Page 的 Floating
+└── FloatingLayer                    ← 全局浮窗，展示在所有页面之上
+    └── ConfirmFloating              ← 一个确认窗口
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>PageContainer 本身走对象池复用——页面切换时，旧容器整体入池，新容器从池中取出初始化，避免频繁的 Instantiate / Destroy 开销。页面在被覆盖时会保留在层级中，只是被隐藏；在 Pop 后相应的 Page 和 Floating 会被销毁（频繁使用的 Page 或 Floating 可以选择回收到对象池，例如在 Page 和 Floating 的基类上添加一个 bool 值来决定这个对象是否会进入对象池）。</p>
+<h2 id="栈式导航">
+  
+  
+    <a href="#栈式导航" class="anchor-heading" aria-labelledby="栈式导航"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 栈式导航
+  
+  
+</h2>
+    
+
+<p>Page 的导航采用<strong>栈（Stack）</strong>来管理，核心操作如下：</p>
+
+<div class="table-wrapper"><table>
+  <thead>
+    <tr>
+      <th>操作</th>
+      <th>行为</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Forward<Page></Page></td>
+      <td>将新页面压入导航栈，跳转过去，相当于 Push。是一个泛型函数，可以传入任何页面脚本</td>
+    </tr>
+    <tr>
+      <td>Back</td>
+      <td>弹出当前页面，返回上一页，相当于 Pop</td>
+    </tr>
+    <tr>
+      <td>Replace</td>
+      <td>替换当前页面，不增加栈深度，相当于先 Back 再 Forward</td>
+    </tr>
+    <tr>
+      <td>BackTo</td>
+      <td>回退到栈中某个指定页面，可能会触发多次 Back</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<p>Page 的一些导航需要均设计为<strong>异步</strong>操作，主要是显示页面的时候的导航，这样可以在导航发生时加入资源加载、数据请求等异步任务。如果请求过重，玩家可能会感觉点击后过了一会儿界面才打开，所以这里的设计需要权衡。如果想给个别页面设置专门的 Loading 状态，可以考虑打开后再在相应页面里实现。</p>
+
+<p>Floating 的导航不使用异步操作，因为确认弹窗之类的 Floating 对时机要求比较紧迫，我们更希望调用后弹窗立刻显示出来。所以需要反复展示的弹窗必须要支持对象池。Floating 第一次展示时会同步加载资源，如果有明显的卡顿的话，可以考虑对相应界面进行预加载。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+</pre></td><td class="rouge-code"><pre><span class="c1">// 打开一个页面，进入商店</span>
+<span class="k">await</span> <span class="n">UIManager</span><span class="p">.</span><span class="n">ForwardAsync</span><span class="p">&lt;</span><span class="n">ShopPage</span><span class="p">&gt;();</span>
+
+<span class="c1">// 打开 Floating 时传入参数</span>
+<span class="n">UIManager</span><span class="p">.</span><span class="n">ShowFloating</span><span class="p">&lt;</span><span class="n">ItemDetailFloating</span><span class="p">&gt;(</span><span class="k">new</span> <span class="n">ItemDetailFloating</span><span class="p">.</span><span class="n">Param</span> <span class="p">{</span> <span class="n">itemId</span> <span class="p">=</span> <span class="m">101</span> <span class="p">});</span>
+
+<span class="c1">// ItemDetailFloating 的实现</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">ItemDetailFloating</span> <span class="p">:</span> <span class="n">Floating</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">class</span> <span class="nc">Param</span>
+    <span class="p">{</span>
+        <span class="k">public</span> <span class="kt">int</span> <span class="n">itemId</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">override</span> <span class="k">void</span> <span class="nf">OnShow</span><span class="p">(</span><span class="kt">object</span> <span class="n">param</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">p</span> <span class="p">=</span> <span class="p">(</span><span class="n">Param</span><span class="p">)</span><span class="n">param</span><span class="p">;</span>
+        <span class="nf">Refresh</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">itemId</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="p">...</span> <span class="c1">// 其它代码</span>
+<span class="p">}</span>
+
+<span class="c1">// 关闭当前页面，返回上一页</span>
+<span class="n">UIManager</span><span class="p">.</span><span class="nf">Back</span><span class="p">();</span>
+
+<span class="c1">// 跨多级返回到指定页面</span>
+<span class="n">UIManager</span><span class="p">.</span><span class="n">BackTo</span><span class="p">&lt;</span><span class="n">ShopPage</span><span class="p">&gt;();</span>
+
+<span class="c1">// 替换当前页面（不增加栈深度，常用于登录后跳主城之类的操作，相当于先 Back 在 Forward）</span>
+<span class="k">await</span> <span class="n">UIManager</span><span class="p">.</span><span class="n">ReplaceAsync</span><span class="p">&lt;</span><span class="n">MainPage</span><span class="p">&gt;();</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+<h2 id="page-生命周期">
+  
+  
+    <a href="#page-生命周期" class="anchor-heading" aria-labelledby="page-生命周期"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Page 生命周期
+  
+  
+</h2>
+    
+
+<p>Page 在导航过程中可能会经历以下回调，开发者可以按需覆写：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+</pre></td><td class="rouge-code"><pre>OnPrepareAsync(param)  ← 进入前异步准备，如果有需要请求的数据通常可以在这里请求，并且页面的资源加载也发生在这个时间（不过这应该是框架功能，不需要开发者专门在这个回调里实现）。并且有需要的话，打开这个界面的时候可以传入任意参数。
+OnForwardTo(param)     ← 通过 Forward 进入这个界面时的回调，最常用的回调，页面的一些同步初始化可以放在这里，也可以拿到打开界面时传入的参数。
+OnBackTo()             ← 通过 Back 或 BackTo 回到这个界面时的回调，一般界面都不太需要实现这个，但是部分界面会有需要。
+OnNavigatedTo()        ← 进入这个界面时的回调，不论 Back 到这里还是 Forward 到这里都会触发。一般不太会用到。
+OnLeave()              ← 离开这个界面时，不论是被其他页面覆盖还是自己返回。一般不太会用到。
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>除此之外，由于 Page 和 Floating 继承自 MonoBehaviour， 所以 MonoBehaviour 的那些生命周期根据需要也是可用的，如 Awake、 Update、 OnEnable 等。</p>
+<h2 id="floating-生命周期">
+  
+  
+    <a href="#floating-生命周期" class="anchor-heading" aria-labelledby="floating-生命周期"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Floating 生命周期
+  
+  
+</h2>
+    
+
+<p>Floating 通常会挂在 FloatingLayer 下，总是展示在所有 Page 的上方。浮窗由统一的管理器控制显示与隐藏。Floating 的生命周期回调如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre>OnShow(page, param)   ← 显示时（可挂载在特定 Page 上，并可以接收任意参数。 page 传 null 则放入通用的 FloatingLayer）
+OnHide()              ← 隐藏时
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>但每个 Page 也可以持有自己的浮窗挂载节点，用于实现某些浮窗属于某个页面的特殊需求，如从某个 Page 里打开一个浮动的子页面，并且可以被新打开的界面覆盖。当 Page 被 Pop 时，该页面下挂载的所有浮窗会自动随之回收，不需要调用方手动清理。</p>
+<h2 id="全局事件">
+  
+  
+    <a href="#全局事件" class="anchor-heading" aria-labelledby="全局事件"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 全局事件
+  
+  
+</h2>
+    
+
+<p>UI 系统可对外暴露若干全局事件，供需要感知 UI 状态的其他模块订阅，无需直接持有 UI 对象的引用。比较常见的也就是页面切换的事件：</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="n">Action</span><span class="p">&lt;</span><span class="n">Page</span><span class="p">&gt;</span>            <span class="n">TopPageChanged</span>          <span class="c1">// 顶层页面发生变化</span>
+<span class="n">Action</span><span class="p">&lt;</span><span class="n">Floating</span><span class="p">,</span> <span class="kt">bool</span><span class="p">&gt;</span>  <span class="n">FloatingDisplayChanged</span>  <span class="c1">// 浮窗显示/隐藏状态变化</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>这些事件通常可用于驱动新手引导一类的系统，避免引导类的代码侵入业务逻辑。</p><hr />
+<h1 id="ui-资源管理方式">
+  
+  
+    <a href="#ui-资源管理方式" class="anchor-heading" aria-labelledby="ui-资源管理方式"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> UI 资源管理方式
+  
+  
+</h1>
+    
+
+<p>管理 UI 资源（包括 UI 预制件）需要结合项目的资源管理框架进行设计。这里只会讲述一些推荐的和 UI 资源相关的资源管理方式。</p>
+<h2 id="prefab-文件名与类名严格绑定">
+  
+  
+    <a href="#prefab-文件名与类名严格绑定" class="anchor-heading" aria-labelledby="prefab-文件名与类名严格绑定"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Prefab 文件名与类名严格绑定
+  
+  
+</h2>
+    
+
+<p>Page / Floating 的 Prefab 文件名<strong>必须与脚本名和类名完全一致</strong>，系统在运行时将类名作为预制件资源的地址去加载，省去了任何手写映射：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre>类名: LoginPage      → Prefab: LoginPage.prefab
+类名: ShopFloating   → Prefab: ShopFloating.prefab
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>这个约定的好处是：新增一个页面只需建文件、写脚本，不需要在任何配置表里登记。当我们使用 ForwardAsync 打开界面时，通过传入一个相应界面脚本的泛型即可打开。不需要在代码中管理字符串，直接用类名就可以找到预制件。</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+</pre></td><td class="rouge-code"><pre><span class="c1">// 打开一个页面，进入商店</span>
+<span class="k">await</span> <span class="n">UIManager</span><span class="p">.</span><span class="n">ForwardAsync</span><span class="p">&lt;</span><span class="n">ShopPage</span><span class="p">&gt;();</span>
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+
+<p>这样做更方便后续维护，如果在 IDE 里修改了某个页面的脚本名，所有需要展示这个界面的地方都会被同步修改（只是别忘了改预制件的名字）。并且开发时可以直接从 Forward 调用的地方跳转到相应的界面。</p><hr />
+<h2 id="资源分类方式">
+  
+  
+    <a href="#资源分类方式" class="anchor-heading" aria-labelledby="资源分类方式"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 资源分类方式
+  
+  
+</h2>
+    
+
+<p>UI 资源（脚本 + Prefab）以<strong>业务模块</strong>为单位组织，而不是把所有 Page 集中放在一个大文件夹里。每个业务模块独占一个顶层文件夹，内部用 <code class="language-plaintext highlighter-rouge">$Pages/</code> 和 <code class="language-plaintext highlighter-rouge">$Floatings/</code> 两个子目录存放 UI 相关内容，脚本和 Prefab 放在同一位置，不拆分。</p>
+
+<p>许多项目会将页面放到同一个文件夹里，这样会对资源拆分（如果有需要的话）造成一定的阻碍；并且会导致同一个业务逻辑的 UI 和其他 UI 混在一起，降低开发者的开发效率。</p>
+
+<p>对于确实无法或无需归属到某个业务模块的通用 Page 或 Floating（如全局 Loading 弹窗、确认弹窗等），则在顶层单独开 <code class="language-plaintext highlighter-rouge">$Pages/</code> 和 <code class="language-plaintext highlighter-rouge">$Floatings/</code> 两个文件夹统一收纳。</p>
+
+<blockquote class="note">
+  <p>使用 <code class="language-plaintext highlighter-rouge">$</code> 符号标记文件夹是否会被放入资源包里。</p>
+
+  <p>预制件引用的图片或其他资源无需放在这里，而是作为二级资源放在其他的通用资源库的文件夹里，由美术和策划负责人进行管理，以便打包时通过搜索引用将其合理分包。</p>
+
+  <p>相关内容可参考：<a href="/_posts/2026-02-25-bundle.html">如何构建零冗余又内存友好的资源打包方案？</a></p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+</pre></td><td class="rouge-code"><pre>MainAssets/
+│
+├── $Equipment/                         ← 装备业务模块
+│   ├── $Pages/
+│   │   ├── EquipmentPage.cs
+│   │   ├── EquipmentPage.prefab
+│   │   ├── EquipmentDetailPage.cs
+│   │   ├── EquipmentDetailPage.prefab
+│   │   ├── EquipmentSynthesisPage.cs
+│   │   └── EquipmentSynthesisPage.prefab
+│   └── $Floatings/
+│       ├── EquipmentInfoFloating.cs
+│       └── EquipmentInfoFloating.prefab
+│
+├── $Shop/                              ← 商店业务模块
+│   ├── $Pages/
+│   │   ├── ShopPage.cs
+│   │   └── ShopPage.prefab
+│   └── $Floatings/
+│       ├── PurchaseConfirmFloating.cs
+│       └── PurchaseConfirmFloating.prefab
+│
+├── $Pages/                             ← 通用 / 无法或无需归类的 Page
+│   ├── LoginPage.cs
+│   ├── LoginPage.prefab
+│   ├── MainPage.cs
+│   └── MainPage.prefab
+│
+└── $Floatings/                         ← 通用 / 无法或无需归类的 Floating
+    ├── AskConfirmFloating.cs
+    ├── AskConfirmFloating.prefab
+    ├── LoadingFloating.cs
+    ├── LoadingFloating.prefab
+    ├── ItemDetailFloating.cs
+    └── ItemDetailFloating.prefab
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+<h2 id="ui-资源加载链路">
+  
+  
+    <a href="#ui-资源加载链路" class="anchor-heading" aria-labelledby="ui-资源加载链路"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> UI 资源加载链路
+  
+  
+</h2>
+    
+
+<p>以打开一个新页面为例，从导航请求到页面显示的完整链路如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code><div class="table-wrapper"><table class="rouge-table"><tbody><tr><td class="rouge-gutter gl"><pre class="lineno">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+</pre></td><td class="rouge-code"><pre>UI 导航请求（Forward）
+    ↓
+向资源管理框架请求异步加载对应 Prefab
+    ↓
+从对象池取出（或新建）PageContainer
+    ↓
+在 PageContainer.pageRoot 下实例化页面 Prefab
+    ↓
+依次执行生命周期（OnPrepareAsync → OnNavigatedTo）
+    ↓
+将 PageContainer 插入对应的 UILayer
+</pre></td></tr></tbody></table></div></code></pre></div></div>
+<h2 id="对象池与资源释放">
+  
+  
+    <a href="#对象池与资源释放" class="anchor-heading" aria-labelledby="对象池与资源释放"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 对象池与资源释放
+  
+  
+</h2>
+    
+
+<ul>
+  <li>PageContainer 整体走对象池，页面切换时回收而非销毁。</li>
+  <li>Page / Floating Prefab 在 Pop/Hide 时可配置是否放入对象池以便下次复用（适合频繁开关的浮窗）。</li>
+  <li>资源句柄（Handle）由 UI 系统内部统一缓存在字典里，页面关闭时如果无需放入对象池的话，自动销毁预制件并 Release 相关句柄，调用方无需手动释放。</li>
+</ul><hr />
+<h1 id="附录ui-动画系统">
+  
+  
+    <a href="#附录ui-动画系统" class="anchor-heading" aria-labelledby="附录ui-动画系统"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> 附录：UI 动画系统
+  
+  
+</h1>
+    
+
+<p>参见：<a href="/_posts/2026-07-01-UIAnimation.html">简易 UI 过渡动画系统</a></p>
+
+    </article>
+  </div>
+  
+  <aside class="side-toc">
+    <nav class="toc-nav">
+      <div class="toc-title">目录</div>
+      <div class="toc-content">
+        <div id="toc-container"></div>
+
+<script>
+(function() {
+  const content = document.querySelector('.main-content');
+  if (!content) return;
+  
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  if (headings.length === 0) return;
+  
+  const tocContainer = document.getElementById('toc-container');
+  const toc = document.createElement('ul');
+  toc.className = 'toc-list';
+  
+  let currentLevel = 1;
+  let currentList = toc;
+  const stack = [toc];
+  
+  headings.forEach((heading, index) => {
+    // 跳过文章标题（第一个h1）
+    if (heading.tagName === 'H1' && index === 0) return;
+    
+    const level = parseInt(heading.tagName.substring(1));
+    const text = heading.textContent;
+    const id = heading.id || 'heading-' + index;
+    
+    if (!heading.id) {
+      heading.id = id;
+    }
+    
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = '#' + id;
+    a.textContent = text;
+    a.className = 'toc-link toc-level-' + level;
+    li.appendChild(a);
+    
+    if (level > currentLevel) {
+      const newList = document.createElement('ul');
+      newList.className = 'toc-sublist';
+      const lastLi = currentList.lastElementChild;
+      if (lastLi) {
+        lastLi.appendChild(newList);
+      }
+      stack.push(newList);
+      currentList = newList;
+    } else if (level < currentLevel) {
+      const diff = currentLevel - level;
+      for (let i = 0; i < diff && stack.length > 1; i++) {
+        stack.pop();
+      }
+      currentList = stack[stack.length - 1];
+    }
+    
+    currentList.appendChild(li);
+    currentLevel = level;
+  });
+  
+  if (toc.children.length > 0) {
+    tocContainer.appendChild(toc);
+  }
+  
+  // 平滑滚动
+  document.querySelectorAll('.toc-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // 更新URL但不滚动
+        history.pushState(null, null, this.getAttribute('href'));
+      }
+    });
+  });
+})();
+</script>
+
+      </div>
+    </nav>
+  </aside>
+</div>
+
+<style>
+.main {
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-wrap {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+}
+
+.main-content-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.main-content-wrap article {
+  max-width: none;
+}
+
+.side-toc {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 80px;
+  width: 280px;
+  height: fit-content;
+  padding: 1rem;
+  border-left: 1px solid #eeebee;
+  flex-shrink: 0;
+}
+
+.toc-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #5c5962;
+}
+
+.toc-nav {
+  font-size: 0.875rem;
+}
+
+.toc-content ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc-content li {
+  margin: 0.25rem 0;
+}
+
+.toc-content a {
+  color: #5c5962;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  transition: color 0.2s;
+}
+
+.toc-content a:hover {
+  color: #7253ed;
+}
+
+.toc-content ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc-content li li a {
+  font-size: 0.8125rem;
+}
+
+.post-meta {
+  font-size: 0.875rem;
+  color: #5c5962;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eeebee;
+}
+
+@media (max-width: 66.5rem) {
+  .page-wrap {
+    flex-direction: column;
+  }
+  
+  .side-toc {
+    position: static;
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #eeebee;
+    margin-top: 2rem;
+    padding-top: 1rem;
+  }
+}
+</style>
+
+          
+
+          
+            
+          
+        </main>
+        
+<hr>
+<footer>
+  
+
+  
+
+  <div class="d-md-none mt-4 fs-2">
+    
+    
+      This site uses <a href="https://github.com/just-the-docs/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    
+  </div>
+</footer>
+
+      </div>
+    </div>
+    
+      
+
+<div class="search-overlay"></div>
+
+    
+  </div>
+
+  
+</body>
+</html>
+
+

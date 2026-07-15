@@ -1,0 +1,68 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 600' role='img' aria-labelledby='title desc'>
+  <title id='title'>三条字段更新从服务器同步到客户端数据镜像</title>
+  <desc id='desc'>左侧为服务器中的单位最终状态，中间为包含三条 UPDATE 的图形化 Modifier，右侧为应用变化前后的客户端数据镜像。</desc>
+  <defs>
+    <marker id='arrow' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='8' markerHeight='8' orient='auto-start-reverse'><path d='M0 0 10 5 0 10z' fill='#667085'/></marker>
+    <style>
+      text{font-family:Inter,'Microsoft YaHei',Arial,sans-serif;letter-spacing:0}.label{fill:#667085;font-size:13px;font-weight:600}.heading{fill:#172033;font-size:20px;font-weight:700}.field{fill:#667085;font-size:12px}.value{fill:#172033;font-size:15px;font-weight:650}.mono{font-family:Consolas,'Cascadia Mono',monospace}.server{fill:#356a9a}.modifier{fill:#8a512d}.client{fill:#2f6f4e}
+    </style>
+  </defs>
+  <rect width='1200' height='600' fill='#f4f6f8'/>
+  <path d='M286 300h43' fill='none' stroke='#667085' stroke-width='2' marker-end='url(#arrow)'/>
+  <path d='M871 300h43' fill='none' stroke='#667085' stroke-width='2' marker-end='url(#arrow)'/>
+
+  <g>
+    <rect x='40' y='112' width='246' height='376' rx='8' fill='#fff' stroke='#b9c9dc' stroke-width='1.5'/>
+    <path d='M48 112h230a8 8 0 0 1 8 8v62H40v-62a8 8 0 0 1 8-8z' fill='#dfeaf6'/>
+    <g transform='translate(62 133)' fill='none' stroke='#356a9a' stroke-width='2'><rect width='30' height='28' rx='3'/><path d='M6 8h18M6 14h18M6 20h12'/></g>
+    <text x='106' y='141' class='label server'>SERVER</text><text x='106' y='163' class='heading'>权威单位状态</text>
+    <text x='64' y='216' class='label'>UNIT</text><text x='64' y='244' class='value mono'>unit-1042</text>
+    <path d='M64 264h198' stroke='#e4e7ec'/>
+    <text x='64' y='296' class='field mono'>level</text><text x='262' y='296' class='value mono' text-anchor='end'>18</text>
+    <text x='64' y='340' class='field mono'>max_hp</text><text x='262' y='340' class='value mono' text-anchor='end'>1320</text>
+    <text x='64' y='384' class='field mono'>attack</text><text x='262' y='384' class='value mono' text-anchor='end'>224</text>
+    <rect x='64' y='420' width='198' height='40' rx='6' fill='#edf6ff'/><circle cx='84' cy='440' r='6' fill='#356a9a'/><text x='100' y='445' class='label server'>FINAL STATE</text>
+  </g>
+
+  <g>
+    <text x='354' y='55' class='label modifier'>MODIFIER</text><text x='354' y='82' class='heading'>3 changes</text>
+    <path d='M354 101h492' stroke='#d7b996' stroke-width='2'/>
+    <g transform='translate(354 122)'>
+      <rect width='492' height='116' rx='8' fill='#fff' stroke='#d7b996' stroke-width='1.5'/>
+      <rect x='16' y='16' width='88' height='28' rx='5' fill='#e7f0fb'/><text x='60' y='35' text-anchor='middle' class='label server'>UPDATE</text>
+      <text x='16' y='69' class='field mono'>target</text><text x='16' y='94' class='value mono'>units</text>
+      <text x='126' y='69' class='field mono'>id</text><text x='126' y='94' class='value mono'>unit-1042</text>
+      <text x='264' y='69' class='field mono'>path</text><text x='264' y='94' class='value mono'>level</text>
+      <path d='M374 58v42' stroke='#e4e7ec'/><text x='396' y='69' class='field mono'>value</text><text x='396' y='96' class='value mono modifier'>18</text>
+    </g>
+    <g transform='translate(354 250)'>
+      <rect width='492' height='116' rx='8' fill='#fff' stroke='#d7b996' stroke-width='1.5'/>
+      <rect x='16' y='16' width='88' height='28' rx='5' fill='#e7f0fb'/><text x='60' y='35' text-anchor='middle' class='label server'>UPDATE</text>
+      <text x='16' y='69' class='field mono'>target</text><text x='16' y='94' class='value mono'>units</text>
+      <text x='126' y='69' class='field mono'>id</text><text x='126' y='94' class='value mono'>unit-1042</text>
+      <text x='264' y='69' class='field mono'>path</text><text x='264' y='94' class='value mono'>max_hp</text>
+      <path d='M374 58v42' stroke='#e4e7ec'/><text x='396' y='69' class='field mono'>value</text><text x='396' y='96' class='value mono modifier'>1320</text>
+    </g>
+    <g transform='translate(354 378)'>
+      <rect width='492' height='116' rx='8' fill='#fff' stroke='#d7b996' stroke-width='1.5'/>
+      <rect x='16' y='16' width='88' height='28' rx='5' fill='#e7f0fb'/><text x='60' y='35' text-anchor='middle' class='label server'>UPDATE</text>
+      <text x='16' y='69' class='field mono'>target</text><text x='16' y='94' class='value mono'>units</text>
+      <text x='126' y='69' class='field mono'>id</text><text x='126' y='94' class='value mono'>unit-1042</text>
+      <text x='264' y='69' class='field mono'>path</text><text x='264' y='94' class='value mono'>attack</text>
+      <path d='M374 58v42' stroke='#e4e7ec'/><text x='396' y='69' class='field mono'>value</text><text x='396' y='96' class='value mono modifier'>224</text>
+    </g>
+  </g>
+
+  <g>
+    <rect x='914' y='112' width='246' height='376' rx='8' fill='#fff' stroke='#aac9b8' stroke-width='1.5'/>
+    <path d='M922 112h230a8 8 0 0 1 8 8v62H914v-62a8 8 0 0 1 8-8z' fill='#e2f0e8'/>
+    <g transform='translate(936 133)' fill='none' stroke='#2f6f4e' stroke-width='2'><rect width='32' height='26' rx='3'/><path d='M7 26v6M25 26v6M4 32h24'/></g>
+    <text x='980' y='153' class='heading'>客户端数据镜像</text>
+    <text x='938' y='216' class='label'>UNIT</text><text x='938' y='244' class='value mono'>unit-1042</text>
+    <path d='M938 264h198' stroke='#e4e7ec'/>
+    <text x='938' y='298' class='field mono'>level</text><text x='1058' y='298' class='field mono' text-anchor='end'>17</text><path d='M1070 292h20' stroke='#98a2b3' marker-end='url(#arrow)'/><text x='1136' y='298' class='value mono' text-anchor='end'>18</text>
+    <text x='938' y='342' class='field mono'>max_hp</text><text x='1058' y='342' class='field mono' text-anchor='end'>1250</text><path d='M1070 336h20' stroke='#98a2b3' marker-end='url(#arrow)'/><text x='1136' y='342' class='value mono' text-anchor='end'>1320</text>
+    <text x='938' y='386' class='field mono'>attack</text><text x='1058' y='386' class='field mono' text-anchor='end'>210</text><path d='M1070 380h20' stroke='#98a2b3' marker-end='url(#arrow)'/><text x='1136' y='386' class='value mono' text-anchor='end'>224</text>
+    <rect x='938' y='420' width='198' height='40' rx='6' fill='#eaf6ef'/><path d='M956 439l6 6 11-13' fill='none' stroke='#2f6f4e' stroke-width='2.5'/><text x='984' y='445' class='label client'>MIRROR UPDATED</text>
+  </g>
+</svg>

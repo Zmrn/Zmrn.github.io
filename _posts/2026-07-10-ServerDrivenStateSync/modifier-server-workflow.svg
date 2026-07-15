@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">服务端在一次请求中产生并提交 Modifier 的工作流程</title>
+  <desc id="desc">虚构的单位等级更新请求进入独立变化上下文，经过按需读取、校验、最终值计算和变化记录后，同一结果分别更新权威状态、组织持久化写入并进入成功响应 Modifier。校验失败时只返回错误，不返回 Modifier。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#667085"/></marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#b42318"/></marker>
+    <style>
+      text{font-family:Inter,'Microsoft YaHei',Arial,sans-serif;letter-spacing:0}.heading{fill:#172033;font-size:20px;font-weight:700}.subheading{fill:#172033;font-size:16px;font-weight:700}.label{fill:#667085;font-size:12px;font-weight:650}.body{fill:#344054;font-size:13px}.value{fill:#172033;font-size:15px;font-weight:650}.mono{font-family:Consolas,'Cascadia Mono',monospace}.blue{fill:#356a9a}.green{fill:#2f6f4e}.amber{fill:#8a512d}.red{fill:#b42318}
+    </style>
+  </defs>
+  <rect width="1200" height="720" fill="#f4f6f8"/>
+
+  <g>
+    <rect x="32" y="150" width="198" height="216" rx="8" fill="#fff" stroke="#b9c9dc" stroke-width="1.5"/>
+    <path d="M40 150h182a8 8 0 0 1 8 8v54H32v-54a8 8 0 0 1 8-8z" fill="#dfeaf6"/>
+    <text x="54" y="178" class="label blue">REQUEST</text>
+    <text x="54" y="199" class="subheading">请求意图</text>
+    <text x="54" y="244" class="label mono">target</text><text x="208" y="244" text-anchor="end" class="value mono">units</text>
+    <text x="54" y="280" class="label mono">id</text><text x="208" y="280" text-anchor="end" class="value mono">unit-1042</text>
+    <text x="54" y="316" class="label mono">action</text><text x="208" y="316" text-anchor="end" class="value mono blue">level + 1</text>
+    <rect x="54" y="334" width="154" height="20" rx="4" fill="#edf4fb"/>
+    <text x="131" y="348" text-anchor="middle" class="label blue">只表达操作意图</text>
+  </g>
+
+  <path d="M230 258h40" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="270" y="40" width="650" height="438" rx="8" fill="#fff" stroke="#c5ccd6" stroke-width="1.5"/>
+    <path d="M278 40h634a8 8 0 0 1 8 8v48H270V48a8 8 0 0 1 8-8z" fill="#eef1f5"/>
+    <text x="296" y="71" class="heading">一次请求的变化上下文</text>
+    <rect x="794" y="55" width="100" height="26" rx="5" fill="#fff" stroke="#c5ccd6"/>
+    <text x="844" y="73" text-anchor="middle" class="label">SERIALIZED</text>
+
+    <rect x="300" y="118" width="268" height="86" rx="7" fill="#f8f9fb" stroke="#cfd6df"/>
+    <circle cx="326" cy="144" r="14" fill="#dfeaf6"/><text x="326" y="149" text-anchor="middle" class="label blue">1</text>
+    <text x="350" y="149" class="subheading">按需读取</text>
+    <text x="326" y="180" class="body mono">unit-1042.level = 17</text>
+
+    <path d="M568 161h44" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="620" y="118" width="270" height="86" rx="7" fill="#f8f9fb" stroke="#cfd6df"/>
+    <circle cx="646" cy="144" r="14" fill="#e2f0e8"/><text x="646" y="149" text-anchor="middle" class="label green">2</text>
+    <text x="670" y="149" class="subheading">校验操作</text>
+    <path d="M646 174l6 6 12-15" fill="none" stroke="#2f6f4e" stroke-width="2.4"/>
+    <text x="674" y="180" class="body">目标存在，操作可执行</text>
+
+    <path d="M755 204v32" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <rect x="300" y="244" width="590" height="92" rx="7" fill="#edf4fb" stroke="#b9c9dc" stroke-width="1.5"/>
+    <circle cx="326" cy="270" r="14" fill="#dfeaf6"/><text x="326" y="275" text-anchor="middle" class="label blue">3</text>
+    <text x="350" y="275" class="subheading">统一更新层</text>
+    <rect x="326" y="292" width="138" height="28" rx="5" fill="#fff" stroke="#cfd6df"/><text x="395" y="311" text-anchor="middle" class="value mono">level + 1</text>
+    <path d="M474 306h62" fill="none" stroke="#667085" stroke-width="1.8" marker-end="url(#arrow)"/>
+    <text x="566" y="311" text-anchor="middle" class="label">计算最终值</text>
+    <path d="M614 306h62" fill="none" stroke="#667085" stroke-width="1.8" marker-end="url(#arrow)"/>
+    <rect x="686" y="292" width="174" height="28" rx="5" fill="#fff" stroke="#aac9b8"/><text x="773" y="311" text-anchor="middle" class="value mono green">level = 18</text>
+    <path d="M860 306h14q14 0 14-14v-18q0-14-14-14h-18" fill="none" stroke="#8a512d" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+    <text x="778" y="278" text-anchor="middle" class="label amber">关联规则可继续登记变化</text>
+
+    <rect x="300" y="366" width="600" height="82" rx="7" fill="#fffaf3" stroke="#d7b996" stroke-width="1.5"/>
+    <circle cx="326" cy="392" r="14" fill="#f5e5d3"/><text x="326" y="397" text-anchor="middle" class="label amber">4</text>
+    <text x="350" y="397" class="subheading">形成变化记录</text>
+    <g transform="translate(326 410)">
+      <rect width="90" height="24" rx="4" fill="#e7f0fb"/><text x="45" y="17" text-anchor="middle" class="label blue">UPDATE</text>
+      <text x="110" y="17" class="body mono">units</text><text x="188" y="17" class="body mono">unit-1042</text><text x="310" y="17" class="body mono">level</text>
+      <rect x="390" width="148" height="24" rx="4" fill="#eaf6ef"/><text x="464" y="17" text-anchor="middle" class="label green">final: 18</text>
+    </g>
+  </g>
+
+  <path d="M890 160h80" fill="none" stroke="#b42318" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arrow-red)"/>
+  <g>
+    <rect x="978" y="116" width="190" height="96" rx="8" fill="#fff5f4" stroke="#e6a6a1" stroke-width="1.5"/>
+    <text x="1000" y="143" class="label red">FAILED</text>
+    <text x="1000" y="168" class="subheading red">错误响应</text>
+    <text x="1000" y="192" class="body red">不返回本批 Modifier</text>
+  </g>
+
+  <path d="M600 448V516" fill="none" stroke="#667085" stroke-width="2"/>
+  <path d="M210 516H990" fill="none" stroke="#667085" stroke-width="2"/>
+  <circle cx="600" cy="516" r="4" fill="#667085"/>
+  <path d="M210 516V552" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M600 516V552" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M990 516V552" fill="none" stroke="#667085" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="40" y="558" width="340" height="126" rx="8" fill="#fff" stroke="#aac9b8" stroke-width="1.5"/>
+    <path d="M48 558h324a8 8 0 0 1 8 8v38H40v-38a8 8 0 0 1 8-8z" fill="#e2f0e8"/>
+    <text x="62" y="584" class="subheading green">权威内存状态</text>
+    <text x="62" y="630" class="label mono">unit-1042.level</text><text x="356" y="630" text-anchor="end" class="value mono green">18</text>
+    <text x="62" y="660" class="body">后续规则读取服务器最终状态</text>
+  </g>
+
+  <g>
+    <rect x="430" y="558" width="340" height="126" rx="8" fill="#fff" stroke="#d7b996" stroke-width="1.5"/>
+    <path d="M438 558h324a8 8 0 0 1 8 8v38H430v-38a8 8 0 0 1 8-8z" fill="#f5e5d3"/>
+    <text x="452" y="584" class="subheading amber">持久化写入</text>
+    <text x="452" y="630" class="label">合并字段修改</text><text x="746" y="630" text-anchor="end" class="value mono amber">level: 18</text>
+    <text x="452" y="660" class="body">集合变更可组成批量写入</text>
+  </g>
+
+  <g>
+    <rect x="820" y="558" width="340" height="126" rx="8" fill="#fff" stroke="#b9c9dc" stroke-width="1.5"/>
+    <path d="M828 558h324a8 8 0 0 1 8 8v38H820v-38a8 8 0 0 1 8-8z" fill="#dfeaf6"/>
+    <text x="842" y="584" class="subheading blue">成功响应 Modifier</text>
+    <rect x="842" y="616" width="82" height="24" rx="4" fill="#e7f0fb"/><text x="883" y="633" text-anchor="middle" class="label blue">UPDATE</text>
+    <text x="942" y="633" class="body mono">unit-1042.level</text><text x="1138" y="633" text-anchor="end" class="value mono green">18</text>
+    <text x="842" y="660" class="body">客户端使用最终值更新镜像</text>
+  </g>
+</svg>
